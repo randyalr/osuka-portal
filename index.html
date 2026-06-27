@@ -1,0 +1,2007 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PORTAL DATA OSUKA — Optimalisasi Sirkulasi Uang Kartal</title>
+<script>
+const SB_URL='https://zyhjguelzmgxamxclewm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5aGpndWVsem1neGFteGNsZXdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNDU1MjcsImV4cCI6MjA5NzgyMTUyN30.8GrQejVw8JYlWTGKKvAb2V7n3jfNJqUfRYqY7ak1XxE';
+window._sbKey=SB_KEY;
+function sbHeaders(){return{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Prefer':'return=representation'};}
+async function sbInsert(table,data){
+  const res=await fetch(`${SB_URL}/rest/v1/${table}`,{method:'POST',headers:sbHeaders(),body:JSON.stringify(data)});
+  const text=await res.text();
+  if(!res.ok){let m=text;try{m=JSON.parse(text).message||text;}catch(_){}throw new Error(`[${res.status}] ${m}`);}
+  try{const r=JSON.parse(text);return Array.isArray(r)?r[0]?.id:r?.id||null;}catch(_){return null;}
+}
+window.supabaseReady=true;
+</script>
+<style>
+/* ===== RESET & BASE ===== */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --primary:#0050a0;--primary-dark:#003d7a;--primary-light:#eff6ff;
+  --success:#059669;--warning:#d97706;--danger:#dc2626;
+  --gray-50:#f8fafc;--gray-100:#f1f5f9;--gray-200:#e2e8f0;
+  --gray-400:#94a3b8;--gray-500:#64748b;--gray-700:#334155;--gray-900:#0f172a;
+  --radius:12px;--radius-sm:8px;--radius-xs:6px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.05);
+  --shadow-md:0 4px 16px rgba(0,0,0,.1);
+  --font:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:var(--font);background:#f0f5fb;color:var(--gray-900);min-height:100vh;line-height:1.5}
+
+/* ===== TOPNAV ===== */
+.topnav{background:linear-gradient(135deg,var(--primary-dark),var(--primary));color:white;padding:0 20px;height:56px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,80,160,.3)}
+.nav-brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.nav-icon{width:32px;height:32px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.nav-title{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-sub{font-size:11px;opacity:.7;display:none}
+.nav-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.nav-pill{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer;color:white;white-space:nowrap;transition:background .2s}
+.nav-pill:hover{background:rgba(255,255,255,.22)}
+.nav-status{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:600;white-space:nowrap}
+.status-online{background:rgba(5,150,105,.25);color:#6ee7b7}
+.status-offline{background:rgba(217,119,6,.25);color:#fcd34d}
+
+/* ===== MAIN WRAP ===== */
+.wrap{max-width:780px;margin:0 auto;padding:20px 16px 60px}
+
+/* ===== STEP INDICATOR ===== */
+.stepper{display:flex;align-items:flex-start;margin-bottom:24px;padding:0 4px;position:relative}
+.stepper::before{content:'';position:absolute;top:16px;left:calc(16px + 8px);right:calc(16px + 8px);height:2px;background:var(--gray-200);z-index:0}
+.step-item{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;z-index:1}
+.step-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;border:2px solid var(--gray-200);background:white;color:var(--gray-400);transition:all .3s;flex-shrink:0}
+.step-item.active .step-dot{background:var(--primary);border-color:var(--primary);color:white;box-shadow:0 0 0 4px rgba(0,80,160,.15)}
+.step-item.done .step-dot{background:var(--success);border-color:var(--success);color:white}
+.step-label{font-size:10px;color:var(--gray-400);margin-top:6px;text-align:center;font-weight:600;line-height:1.3;max-width:70px}
+.step-item.active .step-label{color:var(--primary)}
+.step-item.done .step-label{color:var(--success)}
+.step-connector{flex:1;height:2px;background:var(--gray-200);margin-top:16px;transition:background .3s;flex-shrink:1}
+.step-connector.done{background:var(--success)}
+
+/* ===== CARD ===== */
+.card{background:white;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px}
+.card-head{padding:18px 20px 14px;border-bottom:1px solid var(--gray-100)}
+.card-badge{display:inline-flex;align-items:center;gap:4px;background:var(--primary-light);color:var(--primary);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;margin-bottom:8px}
+.card-title{font-size:17px;font-weight:800;color:var(--gray-900);margin-bottom:4px}
+.card-desc{font-size:13px;color:var(--gray-500)}
+.card-body{padding:20px}
+
+/* ===== FORM ===== */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field:last-child{margin-bottom:0}
+.field-row{display:grid;gap:12px;margin-bottom:14px}
+.field-row.col2{grid-template-columns:1fr 1fr}
+.field-row.col3{grid-template-columns:1fr 1fr 1fr}
+.field-row.col4{grid-template-columns:repeat(4,1fr)}
+.field-label{font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center;gap:4px}
+.req{color:var(--danger)}
+.field-input{border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);padding:11px 14px;font-size:14px;font-family:var(--font);color:var(--gray-900);background:white;width:100%;transition:all .2s;-webkit-appearance:none;appearance:none}
+.field-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,80,160,.1)}
+.field-input.error{border-color:var(--danger);background:#fff5f5}
+.field-input[readonly]{background:var(--gray-50);color:var(--gray-500);cursor:not-allowed}
+textarea.field-input{resize:vertical;min-height:90px;line-height:1.6}
+select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer}
+.field-hint{font-size:11px;color:var(--gray-400)}
+.field-err{font-size:11px;color:var(--danger);font-weight:600}
+
+/* ===== AUTOCOMPLETE ===== */
+.ac-wrap{position:relative}
+.ac-drop{position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);z-index:200;max-height:240px;overflow-y:auto;box-shadow:var(--shadow-md);display:none}
+.ac-drop.open{display:block}
+.ac-row{padding:11px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--gray-100);transition:background .15s}
+.ac-row:hover,.ac-row.focused{background:var(--primary-light)}
+.ac-row:last-child{border-bottom:none}
+.ac-kode{font-size:10px;background:var(--gray-100);color:var(--gray-500);border-radius:4px;padding:2px 6px;font-weight:700;flex-shrink:0}
+.ac-info{flex:1;min-width:0}
+.ac-name{font-weight:700;color:var(--gray-900);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ac-sub{font-size:11px;color:var(--gray-400);margin-top:1px}
+.ac-empty{padding:16px;text-align:center;color:var(--gray-400);font-size:13px}
+.mitra-selected{display:flex;align-items:center;gap:12px;background:var(--primary-light);border:1.5px solid #bfdbfe;border-radius:var(--radius-sm);padding:12px 14px;margin-top:6px}
+.mitra-selected .ms-info{flex:1;min-width:0}
+.mitra-selected .ms-name{font-weight:700;color:#1d4ed8;font-size:14px}
+.mitra-selected .ms-sub{font-size:11px;color:var(--gray-500);margin-top:2px}
+.mitra-selected .ms-clear{background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:20px;line-height:1;padding:4px;border-radius:4px;flex-shrink:0}
+.mitra-selected .ms-clear:hover{color:var(--danger);background:var(--gray-100)}
+
+/* ===== UPLOAD ===== */
+.upload-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:4px}
+.upload-item{}
+.upload-label{font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;display:flex;align-items:center;gap:4px}
+.upload-zone{border:2px dashed var(--gray-200);border-radius:var(--radius-sm);padding:16px 8px;text-align:center;cursor:pointer;transition:all .2s;background:var(--gray-50);position:relative;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--primary);background:var(--primary-light)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-zone .uz-icon{font-size:20px;margin-bottom:4px}
+.upload-zone .uz-txt{font-size:11px;color:var(--gray-500);font-weight:600}
+.upload-zone .uz-sub{font-size:10px;color:var(--gray-400);margin-top:2px}
+.upload-preview{margin-top:6px}
+.preview-thumb{width:100%;height:60px;object-fit:cover;border-radius:6px;display:block;border:1px solid var(--gray-200)}
+.preview-thumb-video{width:100%;height:60px;object-fit:cover;border-radius:6px;display:block}
+.preview-info{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+.preview-name{font-size:10px;color:var(--gray-500);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.preview-rm{background:none;border:none;color:var(--danger);cursor:pointer;font-size:14px;padding:0 2px;flex-shrink:0}
+.upload-stat{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;display:inline-block;margin-top:4px}
+.us-empty{background:var(--gray-100);color:var(--gray-500)}
+.us-ready{background:#d1fae5;color:#065f46}
+.us-loading{background:#dbeafe;color:#1d4ed8}
+.upload-notice{background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;color:#92400e;margin-bottom:14px;display:flex;align-items:flex-start;gap:8px}
+
+/* ===== DETAIL ROWS ===== */
+.detail-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.detail-toolbar h4{font-size:13px;font-weight:700;color:var(--gray-700)}
+.detail-actions{display:flex;gap:8px;flex-wrap:wrap}
+.detail-empty{border:2px dashed var(--gray-200);border-radius:var(--radius-sm);padding:32px 20px;text-align:center;color:var(--gray-400);font-size:13px}
+.detail-empty p{margin-top:8px;font-size:12px}
+.detail-row{background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;transition:border .2s}
+.detail-row:hover{border-color:#bfdbfe}
+.detail-row-num{font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.detail-row-grid{display:grid;grid-template-columns:2fr 1.5fr 2fr;gap:10px}
+.detail-row-grid2{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:10px;align-items:end}
+.nom-help{font-size:11px;color:var(--gray-400)}
+
+/* ===== SUMMARY ===== */
+.summary-block{background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);padding:16px;margin-bottom:14px}
+.summary-block-title{font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.summary-kv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.summary-kv.full{grid-template-columns:1fr}
+.kv-item{background:white;border-radius:var(--radius-xs);padding:10px 12px;border:1px solid var(--gray-100)}
+.kv-label{font-size:10px;color:var(--gray-400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.kv-val{font-size:13px;font-weight:600;color:var(--gray-900)}
+.kv-item.span2{grid-column:span 2}
+.summary-table{width:100%;border-collapse:collapse;font-size:12px}
+.summary-table th{background:var(--gray-100);padding:8px 10px;text-align:left;font-weight:700;color:var(--gray-500);border-bottom:1px solid var(--gray-200)}
+.summary-table td{padding:8px 10px;border-bottom:1px solid var(--gray-100);color:var(--gray-900)}
+.summary-table tr:last-child td{border-bottom:none}
+.summary-total td{font-weight:800;color:var(--success);background:#f0fdf4}
+.media-previews{display:flex;gap:10px;flex-wrap:wrap}
+.media-prev-item{text-align:center}
+.media-prev-item img,.media-prev-item video{height:70px;border-radius:6px;border:1px solid var(--gray-200);cursor:pointer;display:block}
+.media-prev-item span{display:block;font-size:10px;color:var(--gray-400);margin-top:4px}
+
+/* ===== SUCCESS ===== */
+.success-wrap{padding:32px 20px;text-align:center}
+.success-icon-wrap{width:72px;height:72px;background:#d1fae5;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:36px}
+.success-title{font-size:20px;font-weight:800;color:#065f46;margin-bottom:8px}
+.success-desc{font-size:14px;color:var(--gray-500);line-height:1.7;margin-bottom:16px}
+.success-card{background:#f0fdf4;border:1px solid #86efac;border-radius:var(--radius-sm);padding:16px;margin:0 auto 16px;max-width:400px;text-align:left}
+.success-mitra{font-size:16px;font-weight:800;color:var(--gray-900);margin-bottom:4px}
+.success-meta{font-size:13px;color:var(--gray-500);margin-bottom:10px}
+.success-count{font-size:13px;color:var(--success);font-weight:600}
+.success-note{font-size:12px;color:var(--gray-400)}
+
+/* ===== BUTTONS ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;border-radius:var(--radius-sm);font-size:14px;font-weight:700;cursor:pointer;border:none;transition:all .2s;font-family:var(--font);white-space:nowrap;touch-action:manipulation}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:var(--primary);color:white}
+.btn-primary:hover:not(:disabled){background:var(--primary-dark)}
+.btn-secondary{background:white;color:var(--gray-700);border:1.5px solid var(--gray-200)}
+.btn-secondary:hover:not(:disabled){background:var(--gray-50)}
+.btn-success{background:var(--success);color:white}
+.btn-success:hover:not(:disabled){background:#047857}
+.btn-danger-light{background:#fee2e2;color:var(--danger);border:1px solid #fca5a5}
+.btn-sm{padding:8px 14px;font-size:12px;border-radius:var(--radius-xs)}
+.btn-icon{padding:8px;border-radius:var(--radius-xs)}
+.nav-btns{display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-100);gap:10px}
+.nav-btns-right{display:flex;gap:10px}
+
+/* ===== BADGES ===== */
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-upb{background:#dbeafe;color:#1d4ed8}
+.badge-upk{background:#d1fae5;color:#065f46}
+.badge-utle{background:#fee2e2;color:var(--danger)}
+.badge-ule{background:#dbeafe;color:#1d4ed8}
+.badge-pending{background:#fef9c3;color:#854d0e}
+
+/* ===== TOAST ===== */
+.toast-wrap{position:fixed;bottom:20px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:calc(100vw - 32px)}
+.toast{background:#1e293b;color:white;padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;min-width:260px;max-width:340px;box-shadow:var(--shadow-md);display:flex;align-items:center;gap:10px;animation:toastIn .3s ease}
+.toast.t-success{background:#065f46}
+.toast.t-error{background:#991b1b}
+.toast.t-warn{background:#92400e}
+@keyframes toastIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* ===== SPINNER ===== */
+.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top:2px solid white;border-radius:50%;animation:spinning .8s linear infinite;flex-shrink:0}
+@keyframes spinning{to{transform:rotate(360deg)}}
+
+/* ===== MODAL ===== */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-end;justify-content:center}
+.modal-bg.open{display:flex}
+.modal-box{background:white;border-radius:var(--radius) var(--radius) 0 0;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;padding:20px;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:36px;height:4px;background:var(--gray-200);border-radius:2px;margin:0 auto 16px}
+.modal-title{font-size:16px;font-weight:800;margin-bottom:16px;color:var(--gray-900)}
+
+/* ===== LIGHTBOX ===== */
+.lb-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:999;align-items:center;justify-content:center}
+.lb-bg.open{display:flex}
+.lb-bg img,.lb-bg video{max-width:90vw;max-height:90vh;border-radius:8px}
+
+/* ===== RESPONSIVE ===== */
+@media(min-width:600px){
+  .wrap{padding:24px 20px 60px}
+  .nav-sub{display:block}
+  .nav-title{font-size:15px}
+  .card-title{font-size:18px}
+  .upload-grid{grid-template-columns:1fr 1fr 1fr}
+}
+@media(max-width:599px){
+  .topnav{height:52px;padding:0 14px}
+  .nav-title{font-size:13px}
+  .wrap{padding:14px 12px 60px}
+  .stepper::before{left:calc(12px + 8px);right:calc(12px + 8px)}
+  .step-dot{width:28px;height:28px;font-size:12px}
+  .step-label{font-size:9px;max-width:56px}
+  .step-connector{margin-top:14px}
+  .card-head{padding:14px 16px 12px}
+  .card-body{padding:14px 16px}
+  .card-title{font-size:16px}
+  .field-row.col2{grid-template-columns:1fr 1fr}
+  .field-row.col3{grid-template-columns:1fr 1fr}
+  .field-row.col4{grid-template-columns:1fr 1fr}
+  .upload-grid{grid-template-columns:1fr}
+  .detail-row-grid{grid-template-columns:1fr}
+  .summary-kv{grid-template-columns:1fr}
+  .kv-item.span2{grid-column:span 1}
+  .nav-btns{flex-direction:column-reverse}
+  .nav-btns .btn{width:100%;justify-content:center}
+  .nav-btns-right{width:100%;flex-direction:column}
+  .nav-btns-right .btn{width:100%;justify-content:center}
+  .detail-actions{width:100%}
+  .detail-actions .btn{flex:1;justify-content:center}
+}
+@media(min-width:768px){
+  .field-row.col4{grid-template-columns:repeat(4,1fr)}
+  .field-row.col3{grid-template-columns:repeat(3,1fr)}
+}
+
+/* ===== AUTH ===== */
+.auth-view{max-width:440px;margin:0 auto;padding:32px 16px 60px}
+.auth-logo{text-align:center;margin-bottom:18px}
+.auth-logo .al-icon{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,var(--primary-dark),var(--primary));color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 10px;box-shadow:0 4px 14px rgba(0,80,160,.3)}
+.auth-logo h1{font-size:19px;font-weight:800;color:var(--gray-900)}
+.auth-logo p{font-size:12px;color:var(--gray-500);margin-top:2px}
+.auth-switch{text-align:center;font-size:13px;color:var(--gray-500);margin-top:16px}
+.auth-switch a{color:var(--primary);font-weight:700;cursor:pointer;text-decoration:none}
+.auth-icon-big{font-size:48px;text-align:center;margin-bottom:10px}
+.nav-user{font-size:11px;color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:4px 12px;font-weight:600;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:599px){.auth-view{padding:20px 12px 60px}.nav-user{max-width:90px}}
+</style>
+<style>
+/* ===== BOTTOM NAV ===== */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--gray-200);display:flex;z-index:90;box-shadow:0 -2px 8px rgba(0,0,0,.06)}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;cursor:pointer;color:var(--gray-400);font-size:10px;font-weight:600;gap:3px;border:none;background:none;transition:color .2s}
+.bn-item.active{color:var(--primary)}
+.bn-item .bn-icon{font-size:20px;line-height:1}
+
+/* ===== DASHBOARD ===== */
+.dash-view{max-width:780px;margin:0 auto;padding:16px 16px 80px}
+.dash-header{margin-bottom:16px}
+.dash-title{font-size:18px;font-weight:800;color:var(--gray-900)}
+.dash-sub{font-size:12px;color:var(--gray-500);margin-top:2px}
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
+.kpi-card{background:white;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi-blue::before{background:var(--primary)}
+.kpi-green::before{background:var(--success)}
+.kpi-orange::before{background:#f59e0b}
+.kpi-red::before{background:var(--danger)}
+.kpi-label{font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.kpi-val{font-size:22px;font-weight:800;color:var(--gray-900);line-height:1}
+.kpi-sub{font-size:11px;color:var(--gray-400);margin-top:4px}
+.kpi-icon{position:absolute;right:12px;top:12px;font-size:24px;opacity:.15}
+.chart-card{background:white;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:16px}
+.chart-title{font-size:13px;font-weight:700;color:var(--gray-700);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.chart-wrap{position:relative;height:180px}
+.filter-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.filter-sel{border:1.5px solid var(--gray-200);border-radius:var(--radius-xs);padding:7px 12px;font-size:12px;font-family:var(--font);color:var(--gray-700);background:white;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.filter-sel:focus{outline:none;border-color:var(--primary)}
+.laporan-table-wrap{overflow-x:auto}
+.laporan-table{width:100%;border-collapse:collapse;font-size:12px;min-width:600px}
+.laporan-table th{background:var(--gray-50);padding:10px 12px;text-align:left;font-weight:700;color:var(--gray-500);border-bottom:2px solid var(--gray-200);white-space:nowrap}
+.laporan-table td{padding:10px 12px;border-bottom:1px solid var(--gray-100);color:var(--gray-900);vertical-align:middle}
+.laporan-table tr:hover td{background:var(--primary-light)}
+.laporan-table tr:last-child td{border-bottom:none}
+.st-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700}
+.st-pending{background:#fef9c3;color:#854d0e}
+.st-verified{background:#d1fae5;color:#065f46}
+.st-rejected{background:#fee2e2;color:var(--danger)}
+.detail-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto}
+.detail-modal-bg.open{display:flex}
+.detail-modal{background:white;border-radius:var(--radius);width:100%;max-width:700px;margin:auto;overflow:hidden}
+.detail-modal-head{background:linear-gradient(135deg,var(--primary-dark),var(--primary));color:white;padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
+.detail-modal-head h3{font-size:15px;font-weight:800}
+.detail-modal-close{background:rgba(255,255,255,.15);border:none;color:white;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.detail-modal-body{padding:16px;max-height:75vh;overflow-y:auto}
+.detail-section{margin-bottom:16px}
+.detail-section-title{font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--gray-100)}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.detail-kv{background:var(--gray-50);border-radius:var(--radius-xs);padding:10px 12px}
+.detail-kv .dk-label{font-size:10px;color:var(--gray-400);font-weight:700;text-transform:uppercase;margin-bottom:3px}
+.detail-kv .dk-val{font-size:13px;font-weight:600;color:var(--gray-900)}
+.detail-kv.full{grid-column:span 2}
+.media-row{display:flex;gap:10px;flex-wrap:wrap}
+.media-thumb{text-align:center;cursor:pointer}
+.media-thumb img,.media-thumb video{height:80px;border-radius:8px;border:1px solid var(--gray-200);display:block;object-fit:cover}
+.media-thumb span{display:block;font-size:10px;color:var(--gray-400);margin-top:4px}
+.pecahan-table{width:100%;border-collapse:collapse;font-size:12px}
+.pecahan-table th{background:var(--gray-100);padding:8px 10px;text-align:left;font-weight:700;color:var(--gray-500)}
+.pecahan-table td{padding:8px 10px;border-bottom:1px solid var(--gray-100)}
+.pecahan-total td{font-weight:800;color:var(--success);background:#f0fdf4}
+.map-wrap{height:220px;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--gray-200);margin-bottom:16px}
+.empty-dash{text-align:center;padding:40px 20px;color:var(--gray-400)}
+.empty-dash .ed-icon{font-size:40px;margin-bottom:10px}
+.search-box{display:flex;gap:8px;margin-bottom:12px}
+.search-input{flex:1;border:1.5px solid var(--gray-200);border-radius:var(--radius-xs);padding:8px 12px;font-size:13px;font-family:var(--font)}
+.search-input:focus{outline:none;border-color:var(--primary)}
+@media(min-width:600px){.kpi-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:599px){.detail-grid{grid-template-columns:1fr}.detail-kv.full{grid-column:span 1}}
+</style>
+</head>
+<body>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<!-- TOPNAV -->
+<nav class="topnav">
+  <div class="nav-brand">
+    <div class="nav-icon">🏦</div>
+    <div>
+      <div class="nav-title">PORTAL DATA — OSUKA</div>
+      <div class="nav-sub">Optimalisasi Sirkulasi Uang Kartal · Motor PUR Apps KPw BI Jatim</div>
+    </div>
+  </div>
+  <div class="nav-actions">
+    <span class="nav-status status-online" id="sb-status">🟢 Online</span>
+    <span class="nav-user" id="nav-user" style="display:none"></span>
+    <button class="nav-pill" onclick="openCfg()">⚙️</button>
+  </div>
+</nav>
+
+<!-- AUTH VIEW -->
+<div class="auth-view" id="auth-view">
+
+  <!-- LOGIN -->
+  <div id="auth-login">
+    <div class="auth-logo">
+      <div class="al-icon">🏦</div>
+      <h1>PORTAL DATA OSUKA</h1>
+      <p>Optimalisasi Sirkulasi Uang Kartal · Motor PUR Apps KPw BI Jatim</p>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-badge">Masuk</div>
+        <div class="card-title">Login Mitra</div>
+        <div class="card-desc">Gunakan email & password mitra terdaftar</div>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label class="field-label">Email <span class="req">*</span></label>
+          <input type="email" id="lg-email" class="field-input" placeholder="email@mitra.co.id" autocomplete="username">
+          <span class="field-err" id="lg-err-email"></span>
+        </div>
+        <div class="field">
+          <label class="field-label">Password <span class="req">*</span></label>
+          <input type="password" id="lg-pass" class="field-input" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+          <span class="field-err" id="lg-err"></span>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center" id="btn-login" onclick="doLogin()">Masuk →</button>
+        <div style="text-align:right;margin-top:8px"><a onclick="toAuthScreen('forgot')" style="font-size:12px;color:var(--gray-400);cursor:pointer">Lupa password?</a></div>
+        <div class="auth-switch">Belum punya akun? <a onclick="toAuthScreen('signup')">Daftar di sini</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIGNUP -->
+  <div id="auth-signup" style="display:none">
+    <div class="auth-logo"><div class="al-icon">📝</div><h1>Daftar Mitra Baru</h1><p>Lengkapi data sesuai master MD_Mitra</p></div>
+    <div class="card">
+      <div class="card-head"><div class="card-badge">Registrasi</div><div class="card-title">Form Pendaftaran</div><div class="card-desc">Akun aktif setelah verifikasi email</div></div>
+      <div class="card-body">
+        <div class="field"><label class="field-label">Nama Mitra <span class="req">*</span></label><input id="su-nama" class="field-input" placeholder="cth: Indomaret Rungkut"></div>
+        <div class="field-row col2">
+          <div class="field"><label class="field-label">Jenis Mitra <span class="req">*</span></label><select id="su-jenis" class="field-input"><option value="">— Pilih —</option><option>Perbankan</option><option>Retailer</option><option>PD Pasar</option></select></div>
+          <div class="field"><label class="field-label">Wilayah <span class="req">*</span></label><select id="su-wilayah" class="field-input"><option value="">— Pilih —</option></select></div>
+        </div>
+        <div class="field"><label class="field-label">Alamat</label><input id="su-alamat" class="field-input" placeholder="Alamat lengkap"></div>
+        <div class="field-row col2">
+          <div class="field"><label class="field-label">Kabupaten / Kota</label><input id="su-kab" class="field-input" placeholder="cth: Surabaya"></div>
+          <div class="field"><label class="field-label">No. HP</label><input id="su-nohp" class="field-input" placeholder="08xxxxxxxxxx"></div>
+        </div>
+        <div class="field-row col2">
+          <div class="field"><label class="field-label">Latitude</label><input id="su-lat" class="field-input" placeholder="-7.2575"></div>
+          <div class="field"><label class="field-label">Longitude</label><input id="su-lng" class="field-input" placeholder="112.7521"></div>
+        </div>
+        <div class="field"><label class="field-label">PIC <span class="req">*</span></label><input id="su-pic" class="field-input" placeholder="Nama penanggung jawab"></div>
+        <div class="field"><label class="field-label">Email <span class="req">*</span></label><input id="su-email" type="email" class="field-input" placeholder="email@mitra.co.id"></div>
+        <div class="field-row col2">
+          <div class="field"><label class="field-label">Password <span class="req">*</span></label><input id="su-pass" type="password" class="field-input" placeholder="Min. 8 karakter"></div>
+          <div class="field"><label class="field-label">Konfirmasi <span class="req">*</span></label><input id="su-conf" type="password" class="field-input" placeholder="Ulangi password"></div>
+        </div>
+        <span class="field-err" id="su-err" style="display:block;margin-bottom:10px"></span>
+        <button class="btn btn-primary" style="width:100%;justify-content:center" id="btn-signup" onclick="doSignup()">Daftar →</button>
+        <div class="auth-switch">Sudah punya akun? <a onclick="toAuthScreen('login')">Login di sini</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PENDING (setelah signup) -->
+  <div id="auth-pending" style="display:none">
+    <div class="card"><div class="card-body" style="text-align:center;padding:32px 24px">
+      <div class="auth-icon-big">📧</div>
+      <div class="success-title">Cek Email Anda</div>
+      <div class="success-desc">Pendaftaran tersimpan. Sistem mengirim tautan verifikasi ke <strong id="pending-email"></strong>. Klik tautan tersebut untuk mengaktifkan akun, lalu login.</div>
+      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:12px;color:#92400e;margin-bottom:16px">Email dikirim otomatis setelah data tersimpan lengkap di SharePoint List. Jika belum masuk beberapa menit, periksa folder spam.</div>
+      <button class="btn btn-secondary" style="width:100%;justify-content:center" onclick="toAuthScreen('login')">Kembali ke Login</button>
+    </div></div>
+  </div>
+
+  <!-- VERIFY RESULT -->
+  <div id="auth-verify" style="display:none">
+    <div class="auth-logo"><div class="al-icon">🏦</div><h1>PORTAL DATA OSUKA</h1><p>Verifikasi Akun Mitra</p></div>
+    <div class="card"><div class="card-body" id="verify-box" style="text-align:center;padding:32px 24px"></div></div>
+  </div>
+
+  <!-- LUPA PASSWORD -->
+  <div id="auth-forgot" style="display:none">
+    <div class="auth-logo"><div class="al-icon">🔑</div><h1>Lupa Password</h1><p>Masukkan email terdaftar Anda</p></div>
+    <div class="card">
+      <div class="card-head"><div class="card-badge">Reset Password</div><div class="card-title">Kirim Link Reset</div><div class="card-desc">Link reset dikirim ke email Anda</div></div>
+      <div class="card-body">
+        <div class="field">
+          <label class="field-label">Email <span class="req">*</span></label>
+          <input type="email" id="fp-email" class="field-input" placeholder="email@mitra.co.id">
+          <span class="field-err" id="fp-err"></span>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center" id="btn-fp" onclick="doForgotPassword()">Kirim Link Reset →</button>
+        <div class="auth-switch"><a onclick="toAuthScreen('login')" style="color:var(--primary);font-weight:700;cursor:pointer">← Kembali ke Login</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORGOT SENT -->
+  <div id="auth-forgot-sent" style="display:none">
+    <div class="card"><div class="card-body" style="text-align:center;padding:32px 24px">
+      <div class="auth-icon-big">📧</div>
+      <div class="success-title">Cek Email Anda</div>
+      <div class="success-desc">Link reset password telah dikirim ke <strong id="fp-sent-email"></strong>. Klik link tersebut untuk membuat password baru.</div>
+      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:12px;color:#92400e;margin-bottom:16px">Jika tidak masuk dalam beberapa menit, periksa folder spam.</div>
+      <button class="btn btn-secondary" style="width:100%;justify-content:center" onclick="toAuthScreen('login')">Kembali ke Login</button>
+    </div></div>
+  </div>
+
+  <!-- RESET PASSWORD -->
+  <div id="auth-reset" style="display:none">
+    <div class="auth-logo"><div class="al-icon">🔐</div><h1>Reset Password</h1><p>Buat password baru Anda</p></div>
+    <div class="card">
+      <div class="card-head"><div class="card-badge">Password Baru</div><div class="card-title">Ganti Password</div></div>
+      <div class="card-body">
+        <div class="field">
+          <label class="field-label">Password Baru <span class="req">*</span></label>
+          <input type="password" id="rp-pass" class="field-input" placeholder="Min. 8 karakter">
+        </div>
+        <div class="field">
+          <label class="field-label">Konfirmasi Password <span class="req">*</span></label>
+          <input type="password" id="rp-conf" class="field-input" placeholder="Ulangi password baru">
+          <span class="field-err" id="rp-err"></span>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center" id="btn-rp" onclick="doResetPassword()">Simpan Password Baru →</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MAIN -->
+<div id="app-view" style="display:none">
+<!-- BOTTOM NAV -->
+<div class="bottom-nav" id="bottom-nav" style="display:none">
+  <button class="bn-item active" id="bn-dashboard" onclick="switchView('dashboard')">
+    <span class="bn-icon">📊</span><span>Dashboard</span>
+  </button>
+  <button class="bn-item" id="bn-input" onclick="switchView('input')">
+    <span class="bn-icon">📝</span><span>Input Laporan</span>
+  </button>
+  <button class="bn-item" id="bn-profile" onclick="switchView('profile')">
+    <span class="bn-icon">👤</span><span>Profil</span>
+  </button>
+</div>
+
+<!-- DASHBOARD VIEW -->
+<div id="view-dashboard" class="dash-view" style="display:none"></div>
+
+<!-- INPUT VIEW -->
+<div class="wrap" id="view-input" style="display:none">
+
+  <!-- STEPPER -->
+  <div class="stepper" id="stepper">
+    <div class="step-item active" id="si-1"><div class="step-dot">1</div><div class="step-label">Mitra & Periode</div></div>
+    <div class="step-connector" id="sc-1"></div>
+    <div class="step-item" id="si-2"><div class="step-dot">2</div><div class="step-label">Kondisi & Media</div></div>
+    <div class="step-connector" id="sc-2"></div>
+    <div class="step-item" id="si-3"><div class="step-dot">3</div><div class="step-label">Detail Pecahan</div></div>
+    <div class="step-connector" id="sc-3"></div>
+    <div class="step-item" id="si-4"><div class="step-dot">4</div><div class="step-label">Kirim</div></div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div id="step-1">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-badge">Langkah 1 dari 4</div>
+        <div class="card-title">Data Mitra & Periode</div>
+        <div class="card-desc">Pilih mitra pasar dan periode pelaporan</div>
+      </div>
+      <div class="card-body">
+        <div class="field-row col4">
+          <div class="field">
+            <label class="field-label">Tahun <span class="req">*</span></label>
+            <select id="h-tahun" class="field-input"><option>2026</option><option>2025</option><option>2024</option></select>
+          </div>
+          <div class="field">
+            <label class="field-label">Bulan <span class="req">*</span></label>
+            <select id="h-bulan" class="field-input"><option>Januari</option><option>Februari</option><option>Maret</option><option>April</option><option>Mei</option><option selected>Juni</option><option>Juli</option><option>Agustus</option><option>September</option><option>Oktober</option><option>November</option><option>Desember</option></select>
+          </div>
+          <div class="field">
+            <label class="field-label">Minggu <span class="req">*</span></label>
+            <select id="h-minggu" class="field-input"><option>M1</option><option>M2</option><option>M3</option><option>M4</option></select>
+          </div>
+          <div class="field">
+            <label class="field-label">Wilayah <span class="req">*</span></label>
+            <select id="h-wilayah" class="field-input" onchange="onWilayahChange()"><option value="">— Pilih —</option></select>
+            <span class="field-err" id="e-wil"></span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Mitra Pasar <span class="req">*</span></label>
+          <div class="ac-wrap">
+            <input type="text" id="h-mitra-search" class="field-input" placeholder="Ketik nama atau kode mitra..." autocomplete="off" oninput="acSearch(this.value)" onfocus="acSearch(this.value)" onkeydown="acKeyNav(event)">
+            <div class="ac-drop" id="ac-drop"></div>
+          </div>
+          <div id="mitra-chip" style="display:none"></div>
+          <span class="field-err" id="e-mitra"></span>
+          <input type="hidden" id="h-mitra-kode">
+          <input type="hidden" id="h-mitra-val">
+        </div>
+        <div class="field-row col2">
+          <div class="field">
+            <label class="field-label">PIC Pelapor <span class="req">*</span></label>
+            <input type="text" id="h-pic" class="field-input" placeholder="Nama PIC">
+            <span class="field-err" id="e-pic"></span>
+          </div>
+          <div class="field">
+            <label class="field-label">Email Pelapor <span class="req">*</span></label>
+            <input type="email" id="h-email" class="field-input" placeholder="email@mitra.co.id">
+            <span class="field-err" id="e-email"></span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Tanggal Input</label>
+          <input type="date" id="h-tgl-input" class="field-input" readonly>
+          <span class="field-hint">📅 Terisi otomatis hari ini</span>
+        </div>
+        <input type="hidden" id="h-tgl-submit">
+        <input type="hidden" id="h-status" value="Pending">
+        <input type="hidden" id="h-verifikator" value="">
+        <input type="hidden" id="h-tgl-verif" value="">
+        <div class="nav-btns">
+          <div></div>
+          <div class="nav-btns-right">
+            <button class="btn btn-primary" onclick="goStep(2)">Lanjut →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div id="step-2" style="display:none">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-badge">Langkah 2 dari 4</div>
+        <div class="card-title">Kondisi Pasar & Dokumentasi</div>
+        <div class="card-desc">Deskripsikan kondisi UTLE dan upload foto/video bukti</div>
+      </div>
+      <div class="card-body">
+        <div class="field" style="margin-bottom:16px">
+          <label class="field-label">Ringkasan Kondisi UTLE <span class="req">*</span></label>
+          <textarea id="h-ringkasan" class="field-input" placeholder="Deskripsikan kondisi akumulasi UTLE di pasar, termasuk estimasi jumlah, lokasi, dan kondisi uang yang ditemukan..."></textarea>
+          <span class="field-err" id="e-ring"></span>
+        </div>
+        <div class="upload-notice">
+          <span>⚠️</span>
+          <span><strong>Foto dan video wajib diupload</strong> sebagai bukti kondisi UTLE di pasar</span>
+        </div>
+        <div class="upload-grid">
+          <div class="upload-item">
+            <div class="upload-label">📷 Foto 1 <span class="req">*</span></div>
+            <div class="upload-zone" id="dz-foto1" ondragover="dzDrag(event,'dz-foto1')" ondragleave="dzLeave('dz-foto1')" ondrop="dzDrop(event,'foto1')">
+              <input type="file" accept="image/*" onchange="handleFile(this,'foto1')">
+              <div class="uz-icon">🖼️</div>
+              <div class="uz-txt">Tap atau drag</div>
+              <div class="uz-sub">JPG PNG ≤5MB</div>
+            </div>
+            <div class="upload-preview" id="prev-foto1"></div>
+            <span class="upload-stat us-empty" id="stat-foto1">Belum ada</span>
+            <span class="field-err" id="e-foto1"></span>
+          </div>
+          <div class="upload-item">
+            <div class="upload-label">📷 Foto 2 <span class="req">*</span></div>
+            <div class="upload-zone" id="dz-foto2" ondragover="dzDrag(event,'dz-foto2')" ondragleave="dzLeave('dz-foto2')" ondrop="dzDrop(event,'foto2')">
+              <input type="file" accept="image/*" onchange="handleFile(this,'foto2')">
+              <div class="uz-icon">🖼️</div>
+              <div class="uz-txt">Tap atau drag</div>
+              <div class="uz-sub">JPG PNG ≤5MB</div>
+            </div>
+            <div class="upload-preview" id="prev-foto2"></div>
+            <span class="upload-stat us-empty" id="stat-foto2">Belum ada</span>
+            <span class="field-err" id="e-foto2"></span>
+          </div>
+          <div class="upload-item">
+            <div class="upload-label">🎥 Video <span class="req">*</span></div>
+            <div class="upload-zone" id="dz-video" ondragover="dzDrag(event,'dz-video')" ondragleave="dzLeave('dz-video')" ondrop="dzDrop(event,'video')">
+              <input type="file" accept="video/*" onchange="handleFile(this,'video')">
+              <div class="uz-icon">🎬</div>
+              <div class="uz-txt">Tap atau drag</div>
+              <div class="uz-sub">MP4 MOV ≤50MB</div>
+            </div>
+            <div class="upload-preview" id="prev-video"></div>
+            <span class="upload-stat us-empty" id="stat-video">Belum ada</span>
+            <span class="field-err" id="e-video"></span>
+          </div>
+        </div>
+        <div class="nav-btns">
+          <button class="btn btn-secondary" onclick="goStep(1)">← Kembali</button>
+          <div class="nav-btns-right">
+            <button class="btn btn-primary" onclick="goStep(3)">Lanjut →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div id="step-3" style="display:none">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-badge">Langkah 3 dari 4</div>
+        <div class="card-title">Detail Pecahan Uang</div>
+        <div class="card-desc">Isi estimasi nominal UTLE per pecahan yang ditemukan</div>
+      </div>
+      <div class="card-body">
+        <div class="detail-toolbar">
+          <h4 id="detail-count">0 pecahan</h4>
+          <div class="detail-actions">
+            <button class="btn btn-secondary btn-sm" onclick="addDetailRow()">➕ Tambah</button>
+            <button class="btn btn-secondary btn-sm" onclick="generateAllPecahan()">⚡ Semua Pecahan</button>
+          </div>
+        </div>
+        <div id="detail-rows"></div>
+        <div class="detail-empty" id="detail-empty">
+          <div style="font-size:32px">📋</div>
+          <p>Belum ada pecahan ditambahkan</p>
+          <p>Klik <strong>"Tambah"</strong> atau <strong>"Semua Pecahan"</strong></p>
+        </div>
+        <div class="nav-btns">
+          <button class="btn btn-secondary" onclick="goStep(2)">← Kembali</button>
+          <div class="nav-btns-right">
+            <button class="btn btn-primary" onclick="goStep(4)">Lanjut →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div id="step-4" style="display:none">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-badge">Langkah 4 dari 4</div>
+        <div class="card-title">Ringkasan & Kirim</div>
+        <div class="card-desc">Periksa kembali sebelum mengirim laporan</div>
+      </div>
+      <div class="card-body" id="summary-body"></div>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div id="step-success" style="display:none">
+    <div class="card">
+      <div class="success-wrap">
+        <div class="success-icon-wrap">✅</div>
+        <div class="success-title">Laporan Berhasil Dikirim!</div>
+        <div class="success-desc">Terima kasih! Data monitoring UTLE Pasar Anda telah diterima dan sedang diproses oleh tim Bank Indonesia.</div>
+        <div class="success-card" id="success-info"></div>
+        <div class="success-note">Tim BI akan melakukan verifikasi dalam 1×24 jam kerja</div>
+        <div style="margin-top:24px">
+          <button class="btn btn-primary" onclick="resetWizard()">➕ Input Laporan Baru</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</div><!-- /view-input -->
+
+<!-- PROFILE VIEW -->
+<div id="view-profile" class="dash-view" style="display:none"></div>
+
+</div><!-- /app-view -->
+
+<!-- MODAL DETAIL -->
+<div class="detail-modal-bg" id="modal-detail" onclick="if(event.target===this)closeDetailModal()">
+  <div class="detail-modal">
+    <div class="detail-modal-head"><h3 id="dm-title">Detail Laporan</h3><button class="detail-modal-close" onclick="closeDetailModal()">✕</button></div>
+    <div class="detail-modal-body" id="dm-body"></div>
+  </div>
+</div>
+
+<!-- MODAL CONFIG -->
+<div class="modal-bg" id="modal-cfg">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">⚙️ Konfigurasi Portal</div>
+    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px 14px;margin-bottom:12px;font-size:13px;color:#065f46">🟢 Terhubung ke Supabase — osuka-utle-portal</div>
+    <div style="font-size:12px;color:var(--gray-500);margin-bottom:16px">Data Master: MD_Mitra, MD_Wilayah, MD_PecahanUang, MD_TingkatKelusuhan</div>
+    <button class="btn btn-secondary" style="width:100%;justify-content:center" onclick="closeModal('modal-cfg')">Tutup</button>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lb-bg" id="lb-bg" onclick="closeModal('lb-bg')">
+  <img id="lb-img" src="" style="display:none">
+  <video id="lb-vid" src="" controls style="display:none"></video>
+</div>
+
+<script>
+// ============================================================
+// SUPABASE STORAGE UPLOAD
+// ============================================================
+const STORAGE_BUCKET = 'utle-media';
+
+async function uploadToStorage(file, folder){
+  const ext = file.name.split('.').pop();
+  const fname = `${folder}/${Date.now()}_${Math.random().toString(36).substring(2,8)}.${ext}`;
+  const res = await fetch(`${SB_URL}/storage/v1/object/${STORAGE_BUCKET}/${fname}`, {
+    method: 'POST',
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': `Bearer ${SB_KEY}`,
+      'Content-Type': file.type,
+      'x-upsert': 'true'
+    },
+    body: file
+  });
+  if(!res.ok){
+    const err = await res.text();
+    throw new Error(`Upload gagal: ${err}`);
+  }
+  // Return public URL
+  return `${SB_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${fname}`;
+}
+let MD_MITRA=[], MD_WILAYAH=[], MD_PECAHAN=[], MD_TINGKAT=[];
+
+const FALLBACK_PECAHAN=[
+  {kode:'KY',nama:'Rupiah 100.000',jenis:'Uang Kertas (K)',kelompok:'UPB',urutan:1},
+  {kode:'KX',nama:'Rupiah 50.000',jenis:'Uang Kertas (K)',kelompok:'UPB',urutan:2},
+  {kode:'KW',nama:'Rupiah 20.000',jenis:'Uang Kertas (K)',kelompok:'UPK',urutan:3},
+  {kode:'KV',nama:'Rupiah 10.000',jenis:'Uang Kertas (K)',kelompok:'UPK',urutan:4},
+  {kode:'KU',nama:'Rupiah 5.000',jenis:'Uang Kertas (K)',kelompok:'UPK',urutan:5},
+  {kode:'KT',nama:'Rupiah 2.000',jenis:'Uang Kertas (K)',kelompok:'UPK',urutan:6},
+  {kode:'KS',nama:'Rupiah 1.000 Kertas',jenis:'Uang Kertas (K)',kelompok:'UPK',urutan:7},
+  {kode:'LS',nama:'Rupiah 1.000 Logam',jenis:'Uang Logam (L)',kelompok:'UPK',urutan:8},
+  {kode:'LR',nama:'Rupiah 500 Logam',jenis:'Uang Logam (L)',kelompok:'UPK',urutan:9},
+  {kode:'LQ',nama:'Rupiah 200 Logam',jenis:'Uang Logam (L)',kelompok:'UPK',urutan:10},
+  {kode:'LP',nama:'Rupiah 100 Logam',jenis:'Uang Logam (L)',kelompok:'UPK',urutan:11},
+];
+const FALLBACK_TINGKAT=[
+  {title:'UPB UTLE',kelompok:'UPB',soilMin:1,soilMax:8,kategori:'UTLE'},
+  {title:'UPB ULE',kelompok:'UPB',soilMin:9,soilMax:16,kategori:'ULE'},
+  {title:'UPK UTLE',kelompok:'UPK',soilMin:1,soilMax:6,kategori:'UTLE'},
+  {title:'UPK ULE',kelompok:'UPK',soilMin:7,soilMax:16,kategori:'UTLE'},
+];
+
+async function loadMasterData(){
+  const st=document.getElementById('sb-status');
+  try{
+    const [rW,rM,rP,rT]=await Promise.all([
+      fetch(`${SB_URL}/rest/v1/MD_Wilayah?select=KodeWilayah,NamaWilayah,KabupatenKota,Status&Status=eq.Aktif&order=KodeWilayah`,{headers:sbHeaders()}),
+      fetch(`${SB_URL}/rest/v1/MD_Mitra?select=KodeMitra,NamaMitra,JenisMitra,Wilayah,PIC,Email,NoHP,KabupatenKota,Status&Status=eq.Aktif&order=NamaMitra`,{headers:sbHeaders()}),
+      fetch(`${SB_URL}/rest/v1/MD_PecahanUang?select=KodePecahan,NamaPecahan,JenisUang,KelompokPecahan,UrutanTampil,Status&Status=eq.Aktif&order=UrutanTampil`,{headers:sbHeaders()}),
+      fetch(`${SB_URL}/rest/v1/MD_TingkatKelusuhan?select=Title,KelompokPecahan,SoilLevelAwal,SoilLevelAkhir,Kategori,Status&Status=eq.Aktif`,{headers:sbHeaders()}),
+    ]);
+    if(rW.ok) MD_WILAYAH=(await rW.json()).map(w=>({kode:w.KodeWilayah,nama:w.NamaWilayah,kabKota:w.KabupatenKota}));
+    if(rM.ok) MD_MITRA=(await rM.json()).map(m=>({kode:m.KodeMitra,nama:m.NamaMitra,jenis:m.JenisMitra,wilayah:m.Wilayah,pic:m.PIC,email:m.Email,kabKota:m.KabupatenKota,status:m.Status}));
+
+    // Pecahan dari Supabase
+    if(rP.ok){
+      const dp=await rP.json();
+      MD_PECAHAN=dp.map(p=>({kode:p.KodePecahan,nama:p.NamaPecahan,jenis:p.JenisUang,kelompok:p.KelompokPecahan,urutan:p.UrutanTampil}));
+    } else {
+      MD_PECAHAN=FALLBACK_PECAHAN;
+      console.warn('Gagal load MD_PecahanUang, pakai fallback');
+    }
+
+    // Tingkat Kelusuhan dari Supabase
+    if(rT.ok){
+      const dt=await rT.json();
+      MD_TINGKAT=dt.map(t=>({title:t.Title,kelompok:t.KelompokPecahan,soilMin:t.SoilLevelAwal,soilMax:t.SoilLevelAkhir,kategori:t.Kategori}));
+    } else {
+      MD_TINGKAT=FALLBACK_TINGKAT;
+      console.warn('Gagal load MD_TingkatKelusuhan, pakai fallback');
+    }
+
+    buildWilayahDrop();
+    st.textContent='🟢 Online';
+    st.className='nav-status status-online';
+    console.log(`✅ Master data loaded: ${MD_MITRA.length} mitra, ${MD_WILAYAH.length} wilayah, ${MD_PECAHAN.length} pecahan, ${MD_TINGKAT.length} tingkat kelusuhan`);
+  }catch(e){
+    MD_PECAHAN=FALLBACK_PECAHAN;
+    MD_TINGKAT=FALLBACK_TINGKAT;
+    buildWilayahDrop();
+    st.textContent='⚠️ Offline';
+    st.className='nav-status status-offline';
+    console.error('Load master data error:',e);
+    toast('⚠️ Mode offline — menggunakan data lokal','t-warn');
+  }
+}
+
+function buildWilayahDrop(){
+  const sel=document.getElementById('h-wilayah');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— Pilih Wilayah —</option>';
+  MD_WILAYAH.forEach(w=>{
+    const o=document.createElement('option');
+    o.value=w.nama;o.textContent=w.nama+(w.kabKota?' ('+w.kabKota+')':'');
+    sel.appendChild(o);
+  });
+  if(cur)sel.value=cur;
+}
+
+// ============================================================
+// STATE
+// ============================================================
+let curStep=1, selectedMitra=null, acFocusIdx=-1, filteredMitra=[], rowIdx=0;
+let currentUser=null;
+let media={
+  foto1:{url:'',name:'',file:null,storageUrl:''},
+  foto2:{url:'',name:'',file:null,storageUrl:''},
+  video:{url:'',name:'',file:null,storageUrl:''}
+};
+
+// ============================================================
+// TOAST
+// ============================================================
+function toast(msg,type='',dur=3500){
+  const w=document.getElementById('toasts');
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.innerHTML=`<span>${msg}</span>`;
+  w.appendChild(el);
+  setTimeout(()=>el.remove(),dur);
+}
+function toastLoad(msg){
+  const w=document.getElementById('toasts');
+  const el=document.createElement('div');
+  el.id='tl';el.className='toast';
+  el.innerHTML=`<div class="spin"></div><span>${msg}</span>`;
+  w.appendChild(el);
+}
+function rmToastLoad(){const el=document.getElementById('tl');if(el)el.remove();}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openCfg(){document.getElementById('modal-cfg').classList.add('open');}
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+  const v=document.getElementById('lb-vid');if(v)v.pause();
+}
+function openMedia(type,url){
+  const img=document.getElementById('lb-img'),vid=document.getElementById('lb-vid');
+  if(type==='img'){img.src=url;img.style.display='block';vid.style.display='none';}
+  else{vid.src=url;vid.style.display='block';img.style.display='none';}
+  document.getElementById('lb-bg').classList.add('open');
+}
+document.getElementById('modal-cfg').addEventListener('click',function(e){if(e.target===this)closeModal('modal-cfg');});
+
+// ============================================================
+// STEPPER
+// ============================================================
+function goStep(n){
+  if(n>curStep&&!validateStep(curStep))return;
+  showStep(n);
+}
+function showStep(n){
+  [1,2,3,4,'success'].forEach(s=>{const el=document.getElementById(`step-${s}`);if(el)el.style.display='none';});
+  document.getElementById(`step-${n}`).style.display='block';
+  [1,2,3,4].forEach(i=>{
+    const si=document.getElementById(`si-${i}`);
+    si.className='step-item'+(i<n?' done':i===n?' active':'');
+    if(i<4){const sc=document.getElementById(`sc-${i}`);sc.className='step-connector'+(i<n?' done':'');}
+  });
+  curStep=n;
+  if(n===4)buildSummary();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ============================================================
+// VALIDATION
+// ============================================================
+function validateStep(n){
+  if(n===1){
+    let ok=true;
+    if(!selectedMitra){document.getElementById('e-mitra').textContent='Mitra wajib dipilih';ok=false;}
+    else document.getElementById('e-mitra').textContent='';
+    if(!document.getElementById('h-wilayah').value){document.getElementById('e-wil').textContent='Wilayah wajib dipilih';ok=false;}
+    else document.getElementById('e-wil').textContent='';
+    if(!document.getElementById('h-pic').value.trim()){document.getElementById('e-pic').textContent='PIC wajib diisi';ok=false;}
+    else document.getElementById('e-pic').textContent='';
+    const em=document.getElementById('h-email').value.trim();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){document.getElementById('e-email').textContent='Format email tidak valid';ok=false;}
+    else document.getElementById('e-email').textContent='';
+    if(!ok)toast('⚠️ Harap perbaiki field yang tidak valid','t-warn');
+    return ok;
+  }
+  if(n===2){
+    let ok=true;
+    if(!document.getElementById('h-ringkasan').value.trim()){document.getElementById('e-ring').textContent='Ringkasan wajib diisi';ok=false;}
+    else document.getElementById('e-ring').textContent='';
+    if(!media.foto1.name){document.getElementById('e-foto1').textContent='Foto 1 wajib diupload';ok=false;}
+    else document.getElementById('e-foto1').textContent='';
+    if(!media.foto2.name){document.getElementById('e-foto2').textContent='Foto 2 wajib diupload';ok=false;}
+    else document.getElementById('e-foto2').textContent='';
+    if(!media.video.name){document.getElementById('e-video').textContent='Video wajib diupload';ok=false;}
+    else document.getElementById('e-video').textContent='';
+    if(!ok)toast('⚠️ Ringkasan, foto 1, foto 2, dan video wajib diisi','t-warn',5000);
+    return ok;
+  }
+  if(n===3){
+    const rows=document.querySelectorAll('#detail-rows .detail-row');
+    if(!rows.length){toast('⚠️ Tambahkan minimal 1 pecahan','t-warn');return false;}
+    // [PENYESUAIAN 1] Cek pecahan terduplikasi
+    const seen={};
+    for(const r of rows){
+      const sel=document.getElementById(`pec-${r.id}`);
+      if(sel&&sel.value){
+        const kode=sel.value.split('|')[0];
+        if(seen[kode]){
+          toast(`⚠️ Pecahan "${sel.value.split('|')[1]}" terduplikasi. Hapus salah satu baris.`,'t-warn',5000);
+          return false;
+        }
+        seen[kode]=true;
+      }
+    }
+    // [PENYESUAIAN 2] Validasi estimasi: minimal & kelipatan nilai pecahan
+    let has=false, invalid=false;
+    rows.forEach(r=>{
+      const nomEl=document.getElementById(`nom-${r.id}`);
+      const val=parseFloat(nomEl?.value)||0;
+      if(val>0){has=true;if(!validateNom(r.id))invalid=true;}
+    });
+    if(!has){toast('⚠️ Isi minimal 1 estimasi nominal','t-warn');return false;}
+    if(invalid){toast('⚠️ Ada estimasi nominal yang belum sesuai ketentuan (minimal & kelipatan nilai pecahan)','t-warn',5000);return false;}
+    return true;
+  }
+  return true;
+}
+
+// ============================================================
+// AUTOCOMPLETE
+// ============================================================
+function onWilayahChange(){if(selectedMitra)clearMitra();else acSearch(document.getElementById('h-mitra-search').value);}
+function acSearch(q){
+  if(selectedMitra)return;
+  const wil=document.getElementById('h-wilayah').value;
+  const dd=document.getElementById('ac-drop');
+  const term=q.toLowerCase().trim();
+  filteredMitra=MD_MITRA.filter(m=>{
+    const mq=!term||m.nama.toLowerCase().includes(term)||m.kode.toLowerCase().includes(term);
+    const mw=!wil||m.wilayah===wil;
+    return mq&&mw&&m.status==='Aktif';
+  });
+  if(!filteredMitra.length){dd.innerHTML=`<div class="ac-empty">Tidak ada mitra ditemukan</div>`;dd.classList.add('open');return;}
+  dd.innerHTML=filteredMitra.map((m,i)=>`
+    <div class="ac-row" id="acr-${i}" onclick="selectMitra(${i})" onmouseover="acHov(${i})">
+      <span class="ac-kode">${m.kode}</span>
+      <div class="ac-info"><div class="ac-name">${m.nama}</div><div class="ac-sub">${m.wilayah}${m.kabKota?' · '+m.kabKota:''}</div></div>
+    </div>`).join('');
+  acFocusIdx=-1;dd.classList.add('open');
+}
+function acHov(i){acFocusIdx=i;document.querySelectorAll('.ac-row').forEach((el,j)=>el.classList.toggle('focused',j===i));}
+function acKeyNav(e){
+  const dd=document.getElementById('ac-drop');
+  if(!dd.classList.contains('open'))return;
+  if(e.key==='ArrowDown'){acFocusIdx=Math.min(acFocusIdx+1,filteredMitra.length-1);acHov(acFocusIdx);e.preventDefault();}
+  else if(e.key==='ArrowUp'){acFocusIdx=Math.max(acFocusIdx-1,0);acHov(acFocusIdx);e.preventDefault();}
+  else if(e.key==='Enter'&&acFocusIdx>=0){selectMitra(acFocusIdx);e.preventDefault();}
+  else if(e.key==='Escape')dd.classList.remove('open');
+}
+function selectMitra(i){
+  const m=filteredMitra[i];selectedMitra=m;
+  document.getElementById('h-mitra-search').value='';
+  document.getElementById('h-mitra-search').style.display='none';
+  if(!document.getElementById('h-pic').value)document.getElementById('h-pic').value=m.pic||'';
+  if(!document.getElementById('h-email').value)document.getElementById('h-email').value=m.email||'';
+  if(!document.getElementById('h-wilayah').value)document.getElementById('h-wilayah').value=m.wilayah||'';
+  document.getElementById('mitra-chip').style.display='block';
+  document.getElementById('mitra-chip').innerHTML=`
+    <div class="mitra-selected">
+      <div class="ms-info">
+        <div class="ms-name">${m.nama} <span style="font-size:10px;background:#dbeafe;color:#1d4ed8;border-radius:4px;padding:2px 6px;font-weight:400;margin-left:4px">${m.kode}</span></div>
+        <div class="ms-sub">${m.jenis||''}${m.wilayah?' · '+m.wilayah:''}${m.kabKota?' · '+m.kabKota:''}</div>
+      </div>
+      <button class="ms-clear" onclick="clearMitra()">×</button>
+    </div>`;
+  document.getElementById('ac-drop').classList.remove('open');
+  document.getElementById('e-mitra').textContent='';
+}
+function clearMitra(){
+  selectedMitra=null;
+  document.getElementById('h-mitra-search').style.display='';
+  document.getElementById('h-mitra-search').value='';
+  document.getElementById('mitra-chip').style.display='none';
+  document.getElementById('mitra-chip').innerHTML='';
+  document.getElementById('h-mitra-search').focus();
+}
+document.addEventListener('click',e=>{if(!e.target.closest('.ac-wrap'))document.getElementById('ac-drop').classList.remove('open');});
+
+// ============================================================
+// UPLOAD
+// ============================================================
+function dzDrag(e,id){e.preventDefault();document.getElementById(id).classList.add('drag');}
+function dzLeave(id){document.getElementById(id).classList.remove('drag');}
+function dzDrop(e,key){e.preventDefault();document.getElementById('dz-'+key).classList.remove('drag');const f=e.dataTransfer.files[0];if(f)processFile(f,key);}
+function handleFile(input,key){const f=input.files[0];if(f)processFile(f,key);}
+function processFile(file,key){
+  const isVid=key==='video';
+  const maxSize=isVid?50*1024*1024:5*1024*1024;
+  if(file.size>maxSize){toast(`⚠️ Ukuran file melebihi batas ${isVid?'50MB':'5MB'}`,'t-warn');return;}
+  const statEl=document.getElementById(`stat-${key}`);
+  statEl.className='upload-stat us-loading';statEl.textContent='Memproses...';
+  const url=URL.createObjectURL(file);
+  media[key]={url,name:file.name,size:file.size,file:file,storageUrl:''};
+  const prev=document.getElementById(`prev-${key}`);
+  if(isVid){
+    prev.innerHTML=`<video src="${url}" class="preview-thumb-video"></video><div class="preview-info"><span class="preview-name">${file.name}</span><button class="preview-rm" onclick="clearMedia('${key}')">✕</button></div>`;
+  } else {
+    prev.innerHTML=`<img src="${url}" class="preview-thumb" onclick="openMedia('img','${url}')" style="cursor:pointer"><div class="preview-info"><span class="preview-name">${file.name}</span><button class="preview-rm" onclick="clearMedia('${key}')">✕</button></div>`;
+  }
+  statEl.className='upload-stat us-ready';statEl.textContent=`✅ ${(file.size/1024/1024).toFixed(1)}MB`;
+  document.getElementById(`e-${key}`).textContent='';
+}
+function clearMedia(key){
+  if(media[key].url)URL.revokeObjectURL(media[key].url);
+  media[key]={url:'',name:'',file:null,storageUrl:''};
+  document.getElementById(`prev-${key}`).innerHTML='';
+  document.getElementById(`stat-${key}`).className='upload-stat us-empty';
+  document.getElementById(`stat-${key}`).textContent='Belum ada';
+}
+
+// ============================================================
+// DETAIL ROWS — HELPER
+// ============================================================
+// [PENYESUAIAN 2] Ambil nilai nominal numerik dari nama pecahan
+// "Rupiah 100.000" -> 100000 ; "Rupiah 500 Logam" -> 500
+function parseNominalPecahan(nama){
+  const m=(nama||'').replace(/\./g,'').match(/\d+/);
+  return m?parseInt(m[0],10):0;
+}
+function getRowNominalPecahan(id){
+  const sel=document.getElementById(`pec-${id}`);
+  if(!sel||!sel.value)return 0;
+  return parseNominalPecahan(sel.value.split('|')[1]);
+}
+// [PENYESUAIAN 1] Kumpulkan kode pecahan yg sudah dipakai baris lain
+function getUsedPecahanKodes(exceptId){
+  const used=[];
+  document.querySelectorAll('#detail-rows .detail-row').forEach(row=>{
+    if(row.id===exceptId)return;
+    const sel=document.getElementById(`pec-${row.id}`);
+    if(sel&&sel.value)used.push(sel.value.split('|')[0]);
+  });
+  return used;
+}
+// [PENYESUAIAN 2] Validasi estimasi: >= nilai pecahan & kelipatan
+function validateNom(id,showToast=false){
+  const nomEl=document.getElementById(`nom-${id}`);
+  const errEl=document.getElementById(`nomerr-${id}`);
+  if(!nomEl)return true;
+  const nominal=getRowNominalPecahan(id);
+  const raw=nomEl.value;
+  const val=Number(raw);
+  const clearErr=()=>{if(errEl)errEl.textContent='';nomEl.classList.remove('error');};
+  if(!raw){clearErr();return true;}
+  if(!nominal){
+    if(errEl)errEl.textContent='Pilih pecahan dulu';
+    nomEl.classList.add('error');
+    return false;
+  }
+  if(val<nominal){
+    if(errEl)errEl.textContent=`Min Rp${nominal.toLocaleString('id-ID')}`;
+    nomEl.classList.add('error');
+    if(showToast)toast(`⚠️ Estimasi minimal Rp${nominal.toLocaleString('id-ID')} (sebesar nilai pecahan)`,'t-warn',4000);
+    return false;
+  }
+  if(val%nominal!==0){
+    if(errEl)errEl.textContent=`Kelipatan Rp${nominal.toLocaleString('id-ID')}`;
+    nomEl.classList.add('error');
+    if(showToast)toast(`⚠️ Estimasi harus kelipatan Rp${nominal.toLocaleString('id-ID')}`,'t-warn',4000);
+    return false;
+  }
+  clearErr();
+  return true;
+}
+
+// ============================================================
+// DETAIL ROWS
+// ============================================================
+function pecahanOpts(kelompok=''){
+  const grps=[
+    {label:'Uang Kertas — UPB',items:MD_PECAHAN.filter(p=>p.kelompok==='UPB')},
+    {label:'Uang Kertas — UPK',items:MD_PECAHAN.filter(p=>p.kelompok==='UPK'&&p.jenis.includes('Kertas'))},
+    {label:'Uang Logam — UPK',items:MD_PECAHAN.filter(p=>p.jenis.includes('Logam'))},
+  ];
+  let html='<option value="">— Pilih Pecahan —</option>';
+  grps.forEach(g=>{
+    const items=kelompok?g.items.filter(p=>p.kelompok===kelompok):g.items;
+    if(!items.length)return;
+    html+=`<optgroup label="${g.label}">${items.map(p=>`<option value="${p.kode}|${p.nama}|${p.kelompok}">${p.nama}</option>`).join('')}</optgroup>`;
+  });
+  return html;
+}
+// [PENYESUAIAN 3] Default UTLE  +  [PENYESUAIAN 4] hapus label "(Soil x–y)"
+function kategoriOpts(kelompok='',preselect='UTLE'){
+  const items=kelompok?MD_TINGKAT.filter(t=>t.kelompok===kelompok):MD_TINGKAT;
+  let matched=false;
+  const opts=items.map(t=>{
+    const val=`${t.title}|${t.kelompok}|${t.soilMin}|${t.soilMax}|${t.kategori}`;
+    let sel='';
+    if(!matched&&preselect&&t.kategori===preselect){sel=' selected';matched=true;}
+    return `<option value="${val}"${sel}>${t.title}</option>`;
+  }).join('');
+  return '<option value="">— Pilih Kategori —</option>'+opts;
+}
+function onPecChange(id){
+  const sel=document.getElementById(`pec-${id}`);
+  // [PENYESUAIAN 1] Tolak pecahan yang sudah dipilih di baris lain
+  if(sel.value){
+    const kode=sel.value.split('|')[0];
+    if(getUsedPecahanKodes(id).includes(kode)){
+      const nama=sel.value.split('|')[1];
+      toast(`⚠️ Pecahan "${nama}" sudah dipilih di baris lain`,'t-warn',4000);
+      sel.value='';
+    }
+  }
+  const parts=sel.value.split('|');
+  const klp=parts[2]||'';
+  const katEl=document.getElementById(`kat-${id}`);
+  if(katEl)katEl.innerHTML=kategoriOpts(klp); // default UTLE per kelompok
+  // [PENYESUAIAN 2] Sesuaikan min/step input estimasi dgn nilai pecahan, lalu revalidasi
+  const nomEl=document.getElementById(`nom-${id}`);
+  const helpEl=document.getElementById(`nomhelp-${id}`);
+  const nominal=getRowNominalPecahan(id);
+  if(nomEl){
+    if(nominal>0){
+      nomEl.min=nominal;nomEl.step=nominal;nomEl.placeholder=nominal;
+      if(helpEl)helpEl.textContent=`Min & kelipatan Rp${nominal.toLocaleString('id-ID')}`;
+    }else{
+      nomEl.min=0;nomEl.step=1;nomEl.placeholder='0';
+      if(helpEl)helpEl.textContent='';
+    }
+    validateNom(id);
+  }
+}
+function addDetailRow(pecVal=null){
+  const c=document.getElementById('detail-rows');
+  document.getElementById('detail-empty').style.display='none';
+  const id=`r${Date.now()}${rowIdx++}`;
+  const n=document.querySelectorAll('.detail-row').length+1;
+  const div=document.createElement('div');
+  div.className='detail-row';div.id=id;
+  div.innerHTML=`
+    <div class="detail-row-num">
+      <span>Pecahan #${n}</span>
+      <button class="btn btn-danger-light btn-sm btn-icon" onclick="removeRow('${id}')">✕</button>
+    </div>
+    <div class="detail-row-grid">
+      <div class="field" style="margin:0">
+        <label class="field-label">Pecahan Uang <span class="req">*</span></label>
+        <select id="pec-${id}" class="field-input d-pec" onchange="onPecChange('${id}')">${pecahanOpts()}</select>
+      </div>
+      <div class="field" style="margin:0">
+        <label class="field-label">Estimasi Nominal (Rp) <span class="req">*</span></label>
+        <input type="number" id="nom-${id}" class="field-input d-nom" placeholder="0" min="0" step="1" oninput="validateNom('${id}')" onblur="validateNom('${id}',true)">
+        <span class="nom-help" id="nomhelp-${id}"></span>
+        <span class="field-err" id="nomerr-${id}"></span>
+      </div>
+      <div class="field" style="margin:0">
+        <label class="field-label">Kategori Kelusuhan</label>
+        <select id="kat-${id}" class="field-input d-kat">${kategoriOpts()}</select>
+      </div>
+    </div>
+    <div class="detail-row-grid2">
+      <div class="field" style="margin:0">
+        <label class="field-label">Keterangan</label>
+        <input type="text" id="ket-${id}" class="field-input d-ket" placeholder="Keterangan tambahan...">
+      </div>
+    </div>`;
+  c.appendChild(div);
+  if(pecVal){const s=document.getElementById(`pec-${id}`);s.value=pecVal;onPecChange(id);}
+  updateDetailCount();
+}
+function removeRow(id){
+  const el=document.getElementById(id);if(el)el.remove();
+  if(!document.querySelectorAll('.detail-row').length)document.getElementById('detail-empty').style.display='block';
+  updateDetailCount();
+}
+function generateAllPecahan(){
+  document.getElementById('detail-rows').innerHTML='';
+  document.getElementById('detail-empty').style.display='none';
+  rowIdx=0;
+  const pecs=MD_PECAHAN.length?MD_PECAHAN:FALLBACK_PECAHAN;
+  pecs.forEach(p=>addDetailRow(`${p.kode}|${p.nama}|${p.kelompok}`));
+}
+function updateDetailCount(){
+  const n=document.querySelectorAll('.detail-row').length;
+  document.getElementById('detail-count').textContent=`${n} pecahan`;
+}
+
+// ============================================================
+// SUMMARY
+// ============================================================
+function genTitle(){
+  const m=selectedMitra.nama.toUpperCase().replace(/\s+/g,'').substring(0,14);
+  return `${m}-${v('h-tahun')}-${v('h-bulan').toUpperCase()}-${v('h-minggu')}`;
+}
+function v(id){return document.getElementById(id)?.value||'';}
+
+function buildSummary(){
+  const title=genTitle();
+  const rows=document.querySelectorAll('#detail-rows .detail-row');
+  let items=[],total=0,idx=1;
+  rows.forEach(row=>{
+    const rid=row.id;
+    const pec=document.getElementById(`pec-${rid}`);
+    const kat=document.getElementById(`kat-${rid}`);
+    const nom=parseFloat(document.getElementById(`nom-${rid}`)?.value)||0;
+    const ket=document.getElementById(`ket-${rid}`)?.value||'';
+    if(!pec.value||!nom)return;
+    const pp=pec.value.split('|');
+    const kp=kat&&kat.value?kat.value.split('|'):['','','','',''];
+    total+=nom;
+    items.push({no:idx++,pec:pp[1],klp:pp[2],nom,kat:kp[0],ket});
+  });
+
+  document.getElementById('summary-body').innerHTML=`
+    <div class="summary-block">
+      <div class="summary-block-title">📋 Data Header</div>
+      <div class="summary-kv">
+        ${kv('Mitra',`${selectedMitra.nama} <span class="badge badge-upb" style="font-size:10px">${selectedMitra.kode}</span>`)}
+        ${kv('Wilayah',v('h-wilayah'))}
+        ${kv('Periode',`${v('h-tahun')} / ${v('h-bulan')} / ${v('h-minggu')}`)}
+        ${kv('PIC Pelapor',v('h-pic'))}
+        ${kv('Email',v('h-email'))}
+        ${kv('Tanggal Input',v('h-tgl-input'))}
+        ${kv('Ringkasan Kondisi',v('h-ringkasan'),'span2')}
+      </div>
+    </div>
+
+    <div class="summary-block">
+      <div class="summary-block-title">📎 Dokumentasi</div>
+      <div class="media-previews">
+        ${media.foto1.url?`<div class="media-prev-item"><img src="${media.foto1.url}" onclick="openMedia('img','${media.foto1.url}')"><span>Foto 1</span></div>`:''}
+        ${media.foto2.url?`<div class="media-prev-item"><img src="${media.foto2.url}" onclick="openMedia('img','${media.foto2.url}')"><span>Foto 2</span></div>`:''}
+        ${media.video.url?`<div class="media-prev-item"><video src="${media.video.url}" style="height:70px;border-radius:6px;border:1px solid var(--gray-200)"></video><span>Video</span></div>`:''}
+        ${!media.foto1.url&&!media.foto2.url&&!media.video.url?'<span style="color:var(--gray-400);font-size:13px">Tidak ada media</span>':''}
+      </div>
+    </div>
+
+    <div class="summary-block">
+      <div class="summary-block-title">📂 Detail Pecahan (${items.length} item)</div>
+      <div style="overflow-x:auto">
+        <table class="summary-table">
+          <thead><tr><th>#</th><th>Pecahan</th><th>Kelompok</th><th>Estimasi Nominal</th><th>Kategori</th></tr></thead>
+          <tbody>
+            ${items.map(d=>`<tr>
+              <td>${d.no}</td>
+              <td style="font-weight:600">${d.pec}</td>
+              <td><span class="badge ${d.klp==='UPB'?'badge-upb':'badge-upk'}">${d.klp}</span></td>
+              <td style="font-weight:700;color:var(--success)">${fmtRp(d.nom)}</td>
+              <td>${d.kat?`<span class="badge badge-utle">${d.kat}</span>`:'—'}</td>
+            </tr>`).join('')}
+            <tr class="summary-total"><td colspan="3" style="padding:8px 10px">TOTAL ESTIMASI</td><td colspan="2" style="padding:8px 10px;font-size:14px">${fmtRp(total)}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius-sm);padding:12px 14px;font-size:12px;color:#92400e;margin-bottom:20px">
+      ⚠️ Pastikan semua data sudah benar sebelum dikirim
+    </div>
+
+    <div class="nav-btns">
+      <button class="btn btn-secondary" onclick="goStep(3)">← Kembali Edit</button>
+      <div class="nav-btns-right">
+        <button class="btn btn-success" onclick="submitData()" id="btn-submit">🚀 Kirim Laporan</button>
+      </div>
+    </div>`;
+}
+function kv(label,val,cls=''){return `<div class="kv-item ${cls}"><div class="kv-label">${label}</div><div class="kv-val">${val}</div></div>`;}
+
+// ============================================================
+// SUBMIT
+// ============================================================
+async function submitData(){
+  const btn=document.getElementById('btn-submit');
+  btn.disabled=true;btn.innerHTML='<div class="spin"></div> Mengirim...';
+  const title=genTitle();
+  const rows=document.querySelectorAll('#detail-rows .detail-row');
+  let items=[],idx=1;
+  rows.forEach(row=>{
+    const rid=row.id;
+    const pec=document.getElementById(`pec-${rid}`);
+    const kat=document.getElementById(`kat-${rid}`);
+    const nom=parseFloat(document.getElementById(`nom-${rid}`)?.value)||0;
+    if(!pec.value||!nom)return;
+    const pp=pec.value.split('|');
+    const kp=kat&&kat.value?kat.value.split('|'):['','','','',''];
+    items.push({
+      Title:`UTLE-${String(idx++).padStart(3,'0')}`,
+      HeaderPasar:title,
+      PecahanUang:pp[1],KodePecahan:pp[0],KelompokPecahan:pp[2],
+      EstimasiNominal:nom,
+      Kategori:kp[0]||'',
+      Keterangan:document.getElementById(`ket-${rid}`)?.value||'Estimasi akumulasi UTLE pasar',
+      SyncSharePoint:'Pending'
+    });
+  });
+  try{
+    // STEP 1 — Upload media ke Supabase Storage
+    const folder=`${title}_${Date.now()}`;
+    toastLoad('📤 Mengupload foto & video...');
+
+    if(media.foto1.file){
+      const statEl=document.getElementById('stat-foto1');
+      statEl.textContent='📤 Mengupload...';
+      media.foto1.storageUrl=await uploadToStorage(media.foto1.file, folder);
+      statEl.textContent='✅ Terupload';
+    }
+    if(media.foto2.file){
+      const statEl=document.getElementById('stat-foto2');
+      statEl.textContent='📤 Mengupload...';
+      media.foto2.storageUrl=await uploadToStorage(media.foto2.file, folder);
+      statEl.textContent='✅ Terupload';
+    }
+    if(media.video.file){
+      const statEl=document.getElementById('stat-video');
+      statEl.textContent='📤 Mengupload...';
+      media.video.storageUrl=await uploadToStorage(media.video.file, folder);
+      statEl.textContent='✅ Terupload';
+    }
+
+    rmToastLoad();
+
+    // STEP 2 — Simpan Header ke Supabase DB
+    toastLoad('💾 Menyimpan data header...');
+    await sbInsert('TRX_MonitoringULTEPasar_Header',{
+      Title:title,
+      KodeMitra:selectedMitra.kode,Mitra:selectedMitra.nama,JenisMitra:selectedMitra.jenis||'',
+      Wilayah:v('h-wilayah'),Tahun:v('h-tahun'),Bulan:v('h-bulan'),Minggu:v('h-minggu'),
+      PICPelapor:v('h-pic'),EmailPelapor:v('h-email'),
+      TanggalInput:v('h-tgl-input'),TanggalSubmit:new Date().toISOString(),
+      StatusVerifikasi:'Pending',RingkasanKondisi:v('h-ringkasan'),
+      Foto1Name:media.foto1.name||null,
+      Foto1Url:media.foto1.storageUrl||null,
+      Foto2Name:media.foto2.name||null,
+      Foto2Url:media.foto2.storageUrl||null,
+      VideoName:media.video.name||null,
+      VideoUrl:media.video.storageUrl||null,
+      SyncSharePoint:'Pending'
+    });
+
+    // STEP 3 — Simpan Detail
+    rmToastLoad();
+    toastLoad(`💾 Menyimpan ${items.length} detail pecahan...`);
+    for(const d of items) await sbInsert('TRX_MonitoringULTEPasar_Detail',d);
+
+    rmToastLoad();
+
+    // SUCCESS
+    [1,2,3,4].forEach(s=>{const el=document.getElementById(`step-${s}`);if(el)el.style.display='none';});
+    [1,2,3,4].forEach(i=>{
+      document.getElementById(`si-${i}`).className='step-item done';
+      if(i<4)document.getElementById(`sc-${i}`).className='step-connector done';
+    });
+    document.getElementById('step-success').style.display='block';
+    document.getElementById('success-info').innerHTML=`
+      <div class="success-mitra">${selectedMitra.nama}</div>
+      <div class="success-meta">${v('h-wilayah')} · ${v('h-bulan')} ${v('h-tahun')} · ${v('h-minggu')}</div>
+      <div class="success-count">✅ ${items.length} pecahan uang berhasil dilaporkan</div>
+      ${media.foto1.storageUrl||media.foto2.storageUrl||media.video.storageUrl?`<div style="font-size:12px;color:var(--success);margin-top:6px">📎 Media berhasil diupload ke cloud</div>`:''}`;
+    window.scrollTo({top:0,behavior:'smooth'});
+
+  }catch(e){
+    rmToastLoad();
+    btn.disabled=false;btn.innerHTML='🚀 Kirim Laporan';
+    toast(`❌ Gagal: ${e.message}`,'t-error',8000);
+  }
+}
+
+// ============================================================
+// RESET
+// ============================================================
+function resetWizard(){
+  clearMitra();
+  ['h-pic','h-email','h-ringkasan'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('h-wilayah').value='';
+  document.getElementById('h-tgl-input').value=new Date().toISOString().split('T')[0];
+  clearMedia('foto1');clearMedia('foto2');clearMedia('video');
+  document.getElementById('detail-rows').innerHTML='';
+  document.getElementById('detail-empty').style.display='block';
+  rowIdx=0;
+  document.getElementById('step-success').style.display='none';
+  ['e-mitra','e-wil','e-pic','e-email','e-ring','e-foto1','e-foto2','e-video'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='';});
+  showStep(1);
+  if(currentUser)applyLoggedInMitra();
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function fmtRp(n){return 'Rp'+Number(n).toLocaleString('id-ID');}
+
+// ============================================================
+// AUTH — Login / Signup / Verifikasi (berbasis MD_Mitra)
+// ============================================================
+// (opsional) URL HTTP-trigger Power Automate utk kirim email verifikasi instan.
+// Kosongkan jika mengandalkan flow sync MD_Mitra (Supabase→SharePoint) yang sudah ada.
+const PA_MITRA_WEBHOOK='';
+const PA_RESET_WEBHOOK='https://zyhjguelzmgxamxclewm.supabase.co/functions/v1/smooth-action';
+
+function enc(s){return encodeURIComponent(s);}
+async function hashPassword(password){
+  const msgBuffer=new TextEncoder().encode(password);
+  const hashBuffer=await crypto.subtle.digest('SHA-256',msgBuffer);
+  const hashArray=Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+const PORTAL_URL='https://randyalr.github.io/osuka-portal/';
+function verifyUrl(email,token){return `${PORTAL_URL}?verify=${enc(token)}&email=${enc(email)}`;}
+
+function toAuthScreen(name){
+  ['login','signup','pending','verify','forgot','forgot-sent','reset'].forEach(s=>{const el=document.getElementById('auth-'+s);if(el)el.style.display=(s===name?'block':'none');});
+  if(name==='signup')buildSignupWilayah();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function showAuthOnly(){
+  const safe=(id,val)=>{const el=document.getElementById(id);if(el)el.style.display=val;};
+  safe('auth-view','block');
+  safe('app-view','none');
+  safe('nav-user','none');
+  safe('btn-logout','none');
+  safe('bottom-nav','none');
+}
+function buildSignupWilayah(){
+  const sel=document.getElementById('su-wilayah');if(!sel)return;
+  const cur=sel.value;
+  const list=MD_WILAYAH.length?MD_WILAYAH.map(w=>w.nama):['Surabaya','Sidoarjo','Gresik','Mojokerto','Malang','Pasuruan'];
+  sel.innerHTML='<option value="">— Pilih —</option>'+list.map(n=>`<option value="${n}">${n}</option>`).join('');
+  if(cur)sel.value=cur;
+}
+
+async function loginMitra(email,hashedPassword){
+  const r=await fetch(`${SB_URL}/rest/v1/MD_Mitra?Email=eq.${enc(email)}&select=KodeMitra,NamaMitra,JenisMitra,Wilayah,KabupatenKota,PIC,Email,Password,NoHP,Status`,{headers:sbHeaders()});
+  if(!r.ok)throw new Error('Gagal menghubungi server');
+  const rows=await r.json();
+  if(!rows.length)return{ok:false,code:'NOTFOUND'};
+  const u=rows[0];
+  if(String(u.Password||'')!==String(hashedPassword))return{ok:false,code:'BADPASS'};
+  if(u.Status!=='Aktif')return{ok:false,code:'UNVERIFIED'};
+  return{ok:true,user:u};
+}
+async function doLogin(){
+  const errEl=document.getElementById('lg-err'),errE=document.getElementById('lg-err-email');
+  errEl.textContent='';errE.textContent='';
+  const email=document.getElementById('lg-email').value.trim(),pass=document.getElementById('lg-pass').value;
+  let ok=true;
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){errE.textContent='Format email tidak valid';ok=false;}
+  if(!pass){errEl.textContent='Password wajib diisi';ok=false;}
+  if(!ok)return;
+  const btn=document.getElementById('btn-login');btn.disabled=true;btn.innerHTML='<div class="spin"></div> Memeriksa...';
+  try{
+    const hashedPass=await hashPassword(pass);
+    const res=await loginMitra(email,hashedPass);
+    if(!res.ok){
+      if(res.code==='NOTFOUND')errEl.innerHTML='Email belum terdaftar. <a onclick="toAuthScreen(\'signup\')" style="color:var(--primary);font-weight:700;cursor:pointer">Daftar dulu</a>';
+      else if(res.code==='BADPASS')errEl.textContent='Password salah';
+      else if(res.code==='UNVERIFIED')errEl.textContent='Akun belum diverifikasi. Silakan cek email Anda.';
+      btn.disabled=false;btn.innerHTML='Masuk →';return;
+    }
+    currentUser=res.user;enterApp();
+  }catch(e){errEl.textContent=e.message;btn.disabled=false;btn.innerHTML='Masuk →';}
+}
+
+async function emailExists(email){
+  try{const r=await fetch(`${SB_URL}/rest/v1/MD_Mitra?Email=eq.${enc(email)}&select=KodeMitra`,{headers:sbHeaders()});if(!r.ok)return false;return (await r.json()).length>0;}catch(_){return false;}
+}
+async function nextKodeMitra(){
+  try{
+    const r=await fetch(`${SB_URL}/rest/v1/MD_Mitra?select=KodeMitra&order=KodeMitra.desc&limit=50`,{headers:sbHeaders()});
+    const rows=r.ok?await r.json():[];let max=0;
+    rows.forEach(x=>{const m=String(x.KodeMitra||'').match(/(\d+)/);if(m){const n=parseInt(m[1],10);if(n>max)max=n;}});
+    return 'MIT'+String(max+1).padStart(3,'0');
+  }catch(_){return 'MIT'+String(Date.now()).slice(-3);}
+}
+async function doSignup(){
+  const g=id=>document.getElementById(id);
+  const f={nama:g('su-nama').value.trim(),jenis:g('su-jenis').value,wil:g('su-wilayah').value,alamat:g('su-alamat').value.trim(),kab:g('su-kab').value.trim(),lat:g('su-lat').value.trim(),lng:g('su-lng').value.trim(),pic:g('su-pic').value.trim(),nohp:g('su-nohp').value.trim(),email:g('su-email').value.trim(),pass:g('su-pass').value,conf:g('su-conf').value};
+  const err=g('su-err');err.textContent='';
+  if(!f.nama||!f.jenis||!f.wil||!f.pic||!f.email||!f.pass){err.textContent='Lengkapi semua field bertanda *';return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)){err.textContent='Format email tidak valid';return;}
+  if(f.pass.length<8){err.textContent='Password minimal 8 karakter';return;}
+  if(f.pass!==f.conf){err.textContent='Konfirmasi password tidak cocok';return;}
+  const btn=g('btn-signup');btn.disabled=true;btn.innerHTML='<div class="spin"></div> Memproses...';
+  try{
+    if(await emailExists(f.email)){err.textContent='Email sudah terdaftar. Silakan login.';btn.disabled=false;btn.innerHTML='Daftar →';return;}
+    const kode=await nextKodeMitra();
+    const token=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():(Date.now()+'-'+Math.random().toString(36).slice(2));
+    const hashedPass=await hashPassword(f.pass);
+    const payload={KodeMitra:kode,NamaMitra:f.nama,JenisMitra:f.jenis,Wilayah:f.wil,Alamat:f.alamat||null,KabupatenKota:f.kab||null,Latitude:f.lat?Number(f.lat):null,Longitude:f.lng?Number(f.lng):null,PIC:f.pic,Email:f.email,Password:hashedPass,NoHP:f.nohp||null,Status:'Pending',TokenVerifikasi:token};
+    await sbInsert('MD_Mitra',payload);
+    if(PA_MITRA_WEBHOOK){try{await fetch(PA_MITRA_WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({},payload,{VerifyUrl:verifyUrl(f.email,token)}))});}catch(_){}}
+    g('pending-email').textContent=f.email;
+    toAuthScreen('pending');
+  }catch(e){err.textContent='Gagal mendaftar: '+e.message;}
+  btn.disabled=false;btn.innerHTML='Daftar →';
+}
+
+function verifyHtml(icon,title,desc,showLogin=true){
+  return `<div class="auth-icon-big">${icon}</div><div class="success-title">${title}</div><div class="success-desc">${desc}</div>${showLogin?`<button class="btn btn-primary" style="width:100%;justify-content:center" onclick="goLoginClean()">Ke Halaman Login</button>`:''}`;
+}
+function goLoginClean(){history.replaceState({},'',location.pathname);toAuthScreen('login');}
+async function processVerify(email,token){
+  const box=document.getElementById('verify-box');
+  box.innerHTML='<div class="auth-icon-big">⏳</div><p style="color:var(--gray-500)">Memverifikasi akun...</p>';
+  try{
+    const r=await fetch(`${SB_URL}/rest/v1/MD_Mitra?Email=eq.${enc(email)}&TokenVerifikasi=eq.${enc(token)}&select=KodeMitra,Status`,{headers:sbHeaders()});
+    const rows=r.ok?await r.json():[];
+    if(!rows.length){box.innerHTML=verifyHtml('❌','Verifikasi Gagal','Tautan verifikasi tidak valid atau sudah kedaluwarsa.');return;}
+    if(rows[0].Status==='Aktif'){box.innerHTML=verifyHtml('✅','Sudah Terverifikasi','Akun Anda sudah aktif sebelumnya. Silakan login.');return;}
+    const up=await fetch(`${SB_URL}/rest/v1/MD_Mitra?KodeMitra=eq.${enc(rows[0].KodeMitra)}`,{method:'PATCH',headers:sbHeaders(),body:JSON.stringify({Status:'Aktif'})});
+    if(!up.ok)throw new Error('Gagal mengaktifkan akun');
+    box.innerHTML=verifyHtml('🎉','Verifikasi Berhasil','Akun Anda telah aktif. Silakan login untuk mulai melaporkan UTLE.');
+  }catch(e){box.innerHTML=verifyHtml('⚠️','Terjadi Kesalahan',e.message);}
+}
+
+// ============================================================
+// LUPA PASSWORD
+// ============================================================
+async function doForgotPassword(){
+  const errEl=document.getElementById('fp-err');errEl.textContent='';
+  const email=document.getElementById('fp-email').value.trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){errEl.textContent='Format email tidak valid';return;}
+  const btn=document.getElementById('btn-fp');btn.disabled=true;btn.innerHTML='<div class="spin"></div> Memproses...';
+  try{
+    const r=await fetch(`${SB_URL}/rest/v1/MD_Mitra?Email=eq.${enc(email)}&select=KodeMitra,Status`,{headers:sbHeaders()});
+    const rows=r.ok?await r.json():[];
+    if(!rows.length){errEl.textContent='Email tidak ditemukan';btn.disabled=false;btn.innerHTML='Kirim Link Reset →';return;}
+    if(rows[0].Status!=='Aktif'){errEl.textContent='Akun belum diverifikasi';btn.disabled=false;btn.innerHTML='Kirim Link Reset →';return;}
+    const token=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():(Date.now()+'-'+Math.random().toString(36).slice(2));
+    const expiry=new Date(Date.now()+3600000).toISOString(); // 1 jam
+    // Ambil data PIC dulu
+    const rPic=await fetch(`${SB_URL}/rest/v1/MD_Mitra?Email=eq.${enc(email)}&select=PIC`,{headers:sbHeaders()});
+    const picRows=rPic.ok?await rPic.json():[];
+    const pic=picRows[0]?.PIC||email;
+    await fetch(`${SB_URL}/rest/v1/MD_Mitra?Email=eq.${enc(email)}`,{method:'PATCH',headers:sbHeaders(),body:JSON.stringify({ResetToken:token,ResetExpiry:expiry})});
+    const resetUrl=`${PORTAL_URL}?reset=${enc(token)}&email=${enc(email)}`;
+    // Panggil flow PA kirim email reset langsung
+    try{
+      await fetch(PA_RESET_WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},body:JSON.stringify({Email:email,PIC:pic,ResetToken:token,ResetUrl:resetUrl})});
+    }catch(_){}
+    document.getElementById('fp-sent-email').textContent=email;
+    toAuthScreen('forgot-sent');
+  }catch(e){errEl.textContent='Gagal: '+e.message;}
+  btn.disabled=false;btn.innerHTML='Kirim Link Reset →';
+}
+
+async function doResetPassword(){
+  const errEl=document.getElementById('rp-err');errEl.textContent='';
+  const pass=document.getElementById('rp-pass').value;
+  const conf=document.getElementById('rp-conf').value;
+  if(pass.length<8){errEl.textContent='Password minimal 8 karakter';return;}
+  if(pass!==conf){errEl.textContent='Konfirmasi password tidak cocok';return;}
+  const token=window._resetToken,email=window._resetEmail;
+  if(!token||!email){errEl.textContent='Link reset tidak valid';return;}
+  const btn=document.getElementById('btn-rp');btn.disabled=true;btn.innerHTML='<div class="spin"></div> Menyimpan...';
+  try{
+    const r=await fetch(`${SB_URL}/rest/v1/MD_Mitra?Email=eq.${enc(email)}&ResetToken=eq.${enc(token)}&select=KodeMitra,ResetExpiry`,{headers:sbHeaders()});
+    const rows=r.ok?await r.json():[];
+    if(!rows.length){errEl.textContent='Link reset tidak valid atau sudah digunakan';btn.disabled=false;btn.innerHTML='Simpan Password Baru →';return;}
+    if(new Date(rows[0].ResetExpiry)<new Date()){errEl.textContent='Link reset sudah kedaluwarsa (1 jam). Minta link baru.';btn.disabled=false;btn.innerHTML='Simpan Password Baru →';return;}
+    const hashedNewPass=await hashPassword(pass);
+    await fetch(`${SB_URL}/rest/v1/MD_Mitra?Email=eq.${enc(email)}`,{method:'PATCH',headers:sbHeaders(),body:JSON.stringify({Password:hashedNewPass,ResetToken:null,ResetExpiry:null})});
+    window._resetToken=null;window._resetEmail=null;
+    history.replaceState({},'',location.pathname);
+    toast('✅ Password berhasil diubah. Silakan login.','t-success',4000);
+    toAuthScreen('login');
+  }catch(e){errEl.textContent='Gagal: '+e.message;}
+  btn.disabled=false;btn.innerHTML='Simpan Password Baru →';
+}
+
+function initAuthFlow(){
+  showAuthOnly();
+  const p=new URLSearchParams(location.search);
+  const vtoken=p.get('verify'),vemail=p.get('email');
+  const rtoken=p.get('reset'),remail=p.get('email');
+  if(vtoken&&vemail){toAuthScreen('verify');processVerify(vemail,vtoken);return;}
+  if(rtoken&&remail){
+    window._resetToken=rtoken;window._resetEmail=remail;
+    toAuthScreen('reset');return;
+  }
+  toAuthScreen('login');
+}
+function enterApp(){
+  const safe=(id,val)=>{const el=document.getElementById(id);if(el)el.style.display=val;};
+  safe('auth-view','none');
+  safe('app-view','block');
+  safe('nav-user','none');
+  safe('btn-logout','none');
+  safe('bottom-nav','flex');
+  dashData={headers:[],details:[],loaded:false};
+  switchView('dashboard');
+  resetWizard();
+  applyLoggedInMitra();
+}
+function logout(){
+  currentUser=null;selectedMitra=null;
+  dashData={headers:[],details:[],loaded:false};
+  history.replaceState({},'',location.pathname);
+  const le=document.getElementById('lg-email'),lp=document.getElementById('lg-pass');if(le)le.value='';if(lp)lp.value='';
+  const lb=document.getElementById('btn-login');if(lb){lb.disabled=false;lb.innerHTML='Masuk →';}
+  showAuthOnly();toAuthScreen('login');
+}
+function applyLoggedInMitra(){
+  if(!currentUser)return;
+  const m=currentUser;
+  selectedMitra={kode:m.KodeMitra,nama:m.NamaMitra,jenis:m.JenisMitra,wilayah:m.Wilayah,pic:m.PIC,email:m.Email,kabKota:m.KabupatenKota,status:m.Status};
+  const search=document.getElementById('h-mitra-search');if(search)search.style.display='none';
+  if(!document.getElementById('h-pic').value)document.getElementById('h-pic').value=m.PIC||'';
+  if(!document.getElementById('h-email').value)document.getElementById('h-email').value=m.Email||'';
+  const wsel=document.getElementById('h-wilayah');
+  if(m.Wilayah&&![...wsel.options].some(o=>o.value===m.Wilayah)){const o=document.createElement('option');o.value=m.Wilayah;o.textContent=m.Wilayah;wsel.appendChild(o);}
+  if(m.Wilayah)wsel.value=m.Wilayah;
+  const chip=document.getElementById('mitra-chip');
+  chip.style.display='block';
+  chip.innerHTML=`<div class="mitra-selected"><div class="ms-info"><div class="ms-name">${m.NamaMitra} <span style="font-size:10px;background:#dbeafe;color:#1d4ed8;border-radius:4px;padding:2px 6px;font-weight:400;margin-left:4px">${m.KodeMitra}</span></div><div class="ms-sub">${m.JenisMitra||''}${m.Wilayah?' · '+m.Wilayah:''}</div></div><span style="font-size:11px;color:var(--gray-400);font-weight:600">🔒 Login</span></div>`;
+  document.getElementById('e-mitra').textContent='';
+}
+
+
+// ============================================================
+// VIEW SWITCHER
+// ============================================================
+let currentView='dashboard';
+function switchView(view){
+  currentView=view;
+  ['dashboard','input','profile'].forEach(v=>{
+    const el=document.getElementById('view-'+v);
+    const bn=document.getElementById('bn-'+v);
+    if(el)el.style.display=(v===view?'block':'none');
+    if(bn)bn.classList.toggle('active',v===view);
+  });
+  if(view==='dashboard')renderDashboard();
+  if(view==='profile')renderProfile();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+let dashData={headers:[],details:[],loaded:false};
+let dashFilter={tahun:'',bulan:'',search:''};
+
+async function loadDashData(){
+  if(!currentUser)return;
+  const kode=currentUser.KodeMitra;
+  try{
+    const [rH,rD]=await Promise.all([
+      fetch(`${SB_URL}/rest/v1/TRX_MonitoringULTEPasar_Header?KodeMitra=eq.${enc(kode)}&order=TanggalSubmit.desc`,{headers:sbHeaders()}),
+      fetch(`${SB_URL}/rest/v1/TRX_MonitoringULTEPasar_Detail?select=*&order=id.asc`,{headers:sbHeaders()})
+    ]);
+    if(rH.ok)dashData.headers=await rH.json();
+    if(rD.ok)dashData.details=await rD.json();
+    dashData.loaded=true;
+  }catch(e){console.error('Load dash error:',e);}
+}
+
+function getFilteredHeaders(){
+  return dashData.headers.filter(h=>{
+    const fy=!dashFilter.tahun||h.Tahun===dashFilter.tahun;
+    const fb=!dashFilter.bulan||h.Bulan===dashFilter.bulan;
+    const fs=!dashFilter.search||
+      (h.Title||'').toLowerCase().includes(dashFilter.search.toLowerCase())||
+      (h.Bulan||'').toLowerCase().includes(dashFilter.search.toLowerCase());
+    return fy&&fb&&fs;
+  });
+}
+
+function calcKPI(headers){
+  const total=headers.length;
+  const pending=headers.filter(h=>h.StatusVerifikasi==='Pending').length;
+  const verified=headers.filter(h=>h.StatusVerifikasi==='Verified').length;
+  const estimasi=headers.reduce((s,h)=>{
+    const det=dashData.details.filter(d=>d.HeaderPasar===h.Title);
+    return s+det.reduce((a,d)=>a+(parseFloat(d.EstimasiNominal)||0),0);
+  },0);
+  return{total,pending,verified,estimasi};
+}
+
+function calcTren(headers){
+  const map={};
+  headers.forEach(h=>{
+    const key=`${h.Tahun||''}-${h.Bulan||''}`;
+    if(!map[key])map[key]={label:`${h.Bulan||''} ${h.Tahun||''}`,total:0,estimasi:0};
+    map[key].total++;
+    const det=dashData.details.filter(d=>d.HeaderPasar===h.Title);
+    map[key].estimasi+=det.reduce((a,d)=>a+(parseFloat(d.EstimasiNominal)||0),0);
+  });
+  return Object.values(map).slice(-6);
+}
+
+function renderBarChart(canvasId,labels,values,color='#0050a0'){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width=canvas.offsetWidth;
+  const H=canvas.height=180;
+  ctx.clearRect(0,0,W,H);
+  if(!values.length){
+    ctx.fillStyle='#94a3b8';ctx.font='13px Segoe UI';ctx.textAlign='center';
+    ctx.fillText('Belum ada data',W/2,H/2);return;
+  }
+  const max=Math.max(...values,1);
+  const pad={l:40,r:10,t:10,b:36};
+  const bw=(W-pad.l-pad.r)/values.length;
+  const bpad=bw*0.2;
+  values.forEach((v,i)=>{
+    const bh=(v/max)*(H-pad.t-pad.b);
+    const x=pad.l+i*bw+bpad/2;
+    const y=H-pad.b-bh;
+    const bwi=bw-bpad;
+    // bar
+    ctx.fillStyle=color+'cc';
+    ctx.beginPath();
+    ctx.roundRect(x,y,bwi,bh,4);
+    ctx.fill();
+    // nilai
+    ctx.fillStyle='#334155';ctx.font='bold 11px Segoe UI';ctx.textAlign='center';
+    if(v>0){
+      const label=v>=1e6?(v/1e6).toFixed(0)+'jt':v>=1e3?(v/1e3).toFixed(0)+'rb':String(v);
+      ctx.fillText(label,x+bwi/2,y-4);
+    }
+    // label
+    ctx.fillStyle='#94a3b8';ctx.font='10px Segoe UI';
+    const lbl=(labels[i]||'').split(' ');
+    ctx.fillText(lbl[0]||'',x+bwi/2,H-pad.b+14);
+    if(lbl[1])ctx.fillText(lbl[1],x+bwi/2,H-pad.b+26);
+  });
+  // y-axis
+  ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,H-pad.b);ctx.stroke();
+}
+
+function statusBadge(s){
+  const cls=s==='Verified'?'st-verified':s==='Pending'?'st-pending':'st-rejected';
+  return `<span class="st-badge ${cls}">${s||'—'}</span>`;
+}
+
+async function renderDashboard(){
+  const el=document.getElementById('view-dashboard');
+  if(!el)return;
+  // Loading state
+  el.innerHTML=`<div class="dash-header"><div class="dash-title">Dashboard</div><div class="dash-sub">Memuat data...</div></div><div style="text-align:center;padding:40px"><div class="spin" style="border-color:var(--gray-200);border-top-color:var(--primary);margin:0 auto;width:32px;height:32px;border-width:3px"></div></div>`;
+  if(!dashData.loaded)await loadDashData();
+
+  const allH=dashData.headers;
+  const filtered=getFilteredHeaders();
+  const kpi=calcKPI(filtered);
+  const tren=calcTren(filtered);
+  const tahunList=[...new Set(allH.map(h=>h.Tahun).filter(Boolean))].sort().reverse();
+  const bulanList=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+  el.innerHTML=`
+    <div class="dash-header">
+      <div class="dash-title">📊 Dashboard Saya</div>
+      <div class="dash-sub">${currentUser?.NamaMitra||''} · ${currentUser?.Wilayah||''}</div>
+    </div>
+
+    <!-- KPI -->
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-blue"><div class="kpi-icon">📋</div><div class="kpi-label">Total Laporan</div><div class="kpi-val">${kpi.total}</div><div class="kpi-sub">Semua periode</div></div>
+      <div class="kpi-card kpi-orange"><div class="kpi-icon">⏳</div><div class="kpi-label">Pending</div><div class="kpi-val">${kpi.pending}</div><div class="kpi-sub">Menunggu verifikasi</div></div>
+      <div class="kpi-card kpi-green"><div class="kpi-icon">✅</div><div class="kpi-label">Terverifikasi</div><div class="kpi-val">${kpi.verified}</div><div class="kpi-sub">Sudah divalidasi BI</div></div>
+      <div class="kpi-card kpi-red"><div class="kpi-icon">💰</div><div class="kpi-label">Total Estimasi</div><div class="kpi-val" style="font-size:14px">${fmtRp(kpi.estimasi)}</div><div class="kpi-sub">Akumulasi UTLE</div></div>
+    </div>
+
+    <!-- CHART TREN -->
+    <div class="chart-card">
+      <div class="chart-title">📈 Tren Laporan (6 Periode Terakhir)</div>
+      <div class="chart-wrap"><canvas id="chart-tren" style="width:100%"></canvas></div>
+    </div>
+
+    <!-- CHART ESTIMASI -->
+    <div class="chart-card">
+      <div class="chart-title">💰 Tren Estimasi Nominal (Rp)</div>
+      <div class="chart-wrap"><canvas id="chart-estimasi" style="width:100%"></canvas></div>
+    </div>
+
+    <!-- TABEL -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title" style="font-size:14px">📋 Daftar Laporan</div>
+      </div>
+      <div class="card-body">
+        <div class="search-box">
+          <input class="search-input" placeholder="🔍 Cari laporan..." oninput="dashFilter.search=this.value;renderTableOnly()">
+        </div>
+        <div class="filter-bar">
+          <select class="filter-sel" onchange="dashFilter.tahun=this.value;renderTableOnly()">
+            <option value="">Semua Tahun</option>
+            ${tahunList.map(t=>`<option value="${t}">${t}</option>`).join('')}
+          </select>
+          <select class="filter-sel" onchange="dashFilter.bulan=this.value;renderTableOnly()">
+            <option value="">Semua Bulan</option>
+            ${bulanList.map(b=>`<option value="${b}">${b}</option>`).join('')}
+          </select>
+        </div>
+        <div class="laporan-table-wrap" id="tabel-laporan">
+          ${renderTableHTML(filtered)}
+        </div>
+      </div>
+    </div>`;
+
+  // Render charts setelah DOM ready
+  setTimeout(()=>{
+    renderBarChart('chart-tren',tren.map(t=>t.label),tren.map(t=>t.total),'#0050a0');
+    renderBarChart('chart-estimasi',tren.map(t=>t.label),tren.map(t=>t.estimasi),'#059669');
+  },100);
+}
+
+function renderTableOnly(){
+  const el=document.getElementById('tabel-laporan');
+  if(el)el.innerHTML=renderTableHTML(getFilteredHeaders());
+}
+
+function renderTableHTML(headers){
+  if(!headers.length)return`<div class="empty-dash"><div class="ed-icon">📭</div><p>Belum ada laporan ditemukan</p></div>`;
+  return`<table class="laporan-table">
+    <thead><tr><th>#</th><th>Periode</th><th>Tanggal</th><th>Estimasi</th><th>Status</th><th>Aksi</th></tr></thead>
+    <tbody>${headers.map((h,i)=>{
+      const det=dashData.details.filter(d=>d.HeaderPasar===h.Title);
+      const est=det.reduce((a,d)=>a+(parseFloat(d.EstimasiNominal)||0),0);
+      const tgl=h.TanggalSubmit?new Date(h.TanggalSubmit).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}):'—';
+      return`<tr>
+        <td style="color:var(--gray-400);font-size:11px">${i+1}</td>
+        <td><div style="font-weight:700;font-size:12px">${h.Bulan||''} ${h.Tahun||''}</div><div style="font-size:10px;color:var(--gray-400)">${h.Minggu||''}</div></td>
+        <td style="font-size:11px;color:var(--gray-500)">${tgl}</td>
+        <td style="font-weight:700;color:var(--success);font-size:12px">${fmtRp(est)}</td>
+        <td>${statusBadge(h.StatusVerifikasi)}</td>
+        <td><button class="btn btn-secondary btn-sm" onclick="openDetail('${h.Title}')">Detail</button></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+async function openDetail(title){
+  const h=dashData.headers.find(x=>x.Title===title);
+  if(!h)return;
+  const det=dashData.details.filter(d=>d.HeaderPasar===title);
+  const est=det.reduce((a,d)=>a+(parseFloat(d.EstimasiNominal)||0),0);
+  const dm=document.getElementById('dm-body');
+  const dtitle=document.getElementById('dm-title');
+  if(dtitle)dtitle.textContent=title;
+  dm.innerHTML=`
+    <!-- INFO HEADER -->
+    <div class="detail-section">
+      <div class="detail-section-title">📋 Informasi Laporan</div>
+      <div class="detail-grid">
+        <div class="detail-kv"><div class="dk-label">Mitra</div><div class="dk-val">${h.Mitra||'—'}</div></div>
+        <div class="detail-kv"><div class="dk-label">Wilayah</div><div class="dk-val">${h.Wilayah||'—'}</div></div>
+        <div class="detail-kv"><div class="dk-label">Periode</div><div class="dk-val">${h.Bulan||''} ${h.Tahun||''} · ${h.Minggu||''}</div></div>
+        <div class="detail-kv"><div class="dk-label">Status</div><div class="dk-val">${statusBadge(h.StatusVerifikasi)}</div></div>
+        <div class="detail-kv"><div class="dk-label">PIC Pelapor</div><div class="dk-val">${h.PICPelapor||'—'}</div></div>
+        <div class="detail-kv"><div class="dk-label">Tanggal Submit</div><div class="dk-val">${h.TanggalSubmit?new Date(h.TanggalSubmit).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}):'—'}</div></div>
+        <div class="detail-kv full"><div class="dk-label">Ringkasan Kondisi</div><div class="dk-val" style="font-weight:400;line-height:1.6">${h.RingkasanKondisi||'—'}</div></div>
+        ${h.StatusVerifikasi==='Verified'?`
+        <div class="detail-kv"><div class="dk-label">Verifikator</div><div class="dk-val">${h.Verifikator||'—'}</div></div>
+        <div class="detail-kv"><div class="dk-label">Tanggal Verifikasi</div><div class="dk-val">${h.TanggalVerifikasi?new Date(h.TanggalVerifikasi).toLocaleDateString('id-ID'):'—'}</div></div>`:''}
+      </div>
+    </div>
+    <!-- DOKUMENTASI -->
+    ${(h.Foto1Url||h.Foto2Url||h.VideoUrl)?`
+    <div class="detail-section">
+      <div class="detail-section-title">📎 Dokumentasi</div>
+      <div class="media-row">
+        ${h.Foto1Url?`<div class="media-thumb" onclick="openMedia('img','${h.Foto1Url}')"><img src="${h.Foto1Url}" alt="Foto 1"><span>Foto 1</span></div>`:''}
+        ${h.Foto2Url?`<div class="media-thumb" onclick="openMedia('img','${h.Foto2Url}')"><img src="${h.Foto2Url}" alt="Foto 2"><span>Foto 2</span></div>`:''}
+        ${h.VideoUrl?`<div class="media-thumb" onclick="openMedia('vid','${h.VideoUrl}')"><video src="${h.VideoUrl}" style="height:80px;border-radius:8px;border:1px solid var(--gray-200)"></video><span>Video</span></div>`:''}
+      </div>
+    </div>`:''}
+    <!-- DETAIL PECAHAN -->
+    <div class="detail-section">
+      <div class="detail-section-title">💰 Detail Pecahan Uang (${det.length} item)</div>
+      ${det.length?`
+      <div style="overflow-x:auto">
+        <table class="pecahan-table">
+          <thead><tr><th>#</th><th>Pecahan</th><th>Kelompok</th><th>Kategori</th><th>Estimasi Nominal</th></tr></thead>
+          <tbody>
+            ${det.map((d,i)=>`<tr>
+              <td>${i+1}</td>
+              <td style="font-weight:600">${d.PecahanUang||'—'}</td>
+              <td><span class="badge ${(d.KelompokPecahan||'')=='UPB'?'badge-upb':'badge-upk'}">${d.KelompokPecahan||'—'}</span></td>
+              <td>${d.Kategori?`<span class="badge badge-utle">${d.Kategori}</span>`:'—'}</td>
+              <td style="font-weight:700;color:var(--success)">${fmtRp(parseFloat(d.EstimasiNominal)||0)}</td>
+            </tr>`).join('')}
+            <tr class="pecahan-total"><td colspan="4" style="padding:8px 10px">TOTAL ESTIMASI</td><td style="padding:8px 10px">${fmtRp(est)}</td></tr>
+          </tbody>
+        </table>
+      </div>`:`<div class="empty-dash" style="padding:20px"><p>Tidak ada detail pecahan</p></div>`}
+    </div>`;
+  document.getElementById('modal-detail').classList.add('open');
+}
+
+function closeDetailModal(){
+  document.getElementById('modal-detail').classList.remove('open');
+}
+
+// ============================================================
+// PROFILE VIEW
+// ============================================================
+function renderProfile(){
+  const el=document.getElementById('view-profile');
+  if(!el||!currentUser)return;
+  const u=currentUser;
+  el.innerHTML=`
+    <div class="dash-header">
+      <div class="dash-title">👤 Profil Mitra</div>
+      <div class="dash-sub">Informasi akun terdaftar</div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-body">
+        <div style="text-align:center;padding:16px 0 8px">
+          <div style="width:64px;height:64px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:28px">🏪</div>
+          <div style="font-size:18px;font-weight:800;color:var(--gray-900)">${u.NamaMitra||'—'}</div>
+          <div style="font-size:12px;color:var(--gray-500);margin-top:4px">${u.JenisMitra||'—'} · ${u.Wilayah||'—'}</div>
+          <span class="badge ${u.Status==='Aktif'?'badge-upk':'badge-pending'}" style="margin-top:8px">${u.Status||'—'}</span>
+        </div>
+        <hr style="border:none;border-top:1px solid var(--gray-100);margin:16px 0">
+        <div class="detail-grid">
+          <div class="detail-kv"><div class="dk-label">Kode Mitra</div><div class="dk-val">${u.KodeMitra||'—'}</div></div>
+          <div class="detail-kv"><div class="dk-label">Jenis Mitra</div><div class="dk-val">${u.JenisMitra||'—'}</div></div>
+          <div class="detail-kv"><div class="dk-label">PIC</div><div class="dk-val">${u.PIC||'—'}</div></div>
+          <div class="detail-kv"><div class="dk-label">No. HP</div><div class="dk-val">${u.NoHP||'—'}</div></div>
+          <div class="detail-kv full"><div class="dk-label">Email</div><div class="dk-val">${u.Email||'—'}</div></div>
+          <div class="detail-kv full"><div class="dk-label">Kabupaten/Kota</div><div class="dk-val">${u.KabupatenKota||'—'}</div></div>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-secondary" style="width:100%;justify-content:center;margin-bottom:8px" onclick="switchView('input')">📝 Input Laporan Baru</button>
+    <button class="btn btn-danger-light" style="width:100%;justify-content:center" onclick="logout()">🚪 Keluar</button>
+  `;
+}
+
+
+// ============================================================
+// INIT
+// ============================================================
+document.getElementById('h-tgl-input').value=new Date().toISOString().split('T')[0];
+loadMasterData();
+initAuthFlow();
+</script>
+</body>
+</html>
