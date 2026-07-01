@@ -2028,9 +2028,8 @@ function buildSignupWilayah(){
 }
 
 async function loginMitra(email,hashedPassword){
-  const rows=await efQuery({table:'MD_Mitra',select:'KodeMitra,NamaMitra,JenisMitra,Wilayah,KabupatenKota,PIC,Email,Password,NoHP,Status',filter:{Email:`eq.${email}`}});  if(!r.ok)throw new Error('Gagal menghubungi server');
-  const rows=await r.json();
-  if(!rows.length)return{ok:false,code:'NOTFOUND'};
+  const rows=await efQuery({table:'MD_Mitra',select:'KodeMitra,NamaMitra,JenisMitra,Wilayah,KabupatenKota,PIC,Email,Password,NoHP,Status',filter:{Email:`eq.${email}`}});
+  if(!rows||!rows.length)return{ok:false,code:'NOTFOUND'};
   const u=rows[0];
   if(String(u.Password||'')!==String(hashedPassword))return{ok:false,code:'BADPASS'};
   if(u.Status!=='Aktif')return{ok:false,code:'UNVERIFIED'};
