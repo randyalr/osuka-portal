@@ -2152,7 +2152,13 @@ async function doForgotPassword(){
     const rPic=await fetch(`${SB_URL}/rest/v1/MD_Mitra?Email=eq.${enc(email)}&select=PIC`,{headers:sbHeaders()});
     const picRows=rPic.ok?await rPic.json():[];
     const pic=picRows[0]?.PIC||email;
-    await fetch(`${SB_URL}/rest/v1/MD_Mitra?Email=eq.${enc(email)}`,{method:'PATCH',headers:sbHeaders(),body:JSON.stringify({ResetToken:token,ResetExpiry:expiry})});
+       const patchRes=await fetch(`${SB_URL}/rest/v1/MD_Mitra?Email=eq.${enc(email)}`,{method:'PATCH',headers:sbHeaders(),body:JSON.stringify({ResetToken:token,ResetExpiry:expiry})});
+    const patchRows=patchRes.ok?await patchRes.json():[];
+    if(!patchRes.ok||!Array.isArray(patchRows)||!patchRows.length){
+      errEl.textContent='Gagal menyimpan token reset. Coba lagi atau hubungi admin.';
+      btn.disabled=false;btn.innerHTML='Kirim Link Reset →';
+      return;
+    }
     const resetUrl=`${PORTAL_URL}?reset=${enc(token)}&email=${enc(email)}`;
     // Panggil flow PA kirim email reset langsung
     try{
