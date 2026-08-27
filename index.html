@@ -641,8 +641,11 @@ select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
     <span class="bn-badge" id="bn-badge"></span>
     <span>Dashboard</span>
   </button>
-  <button class="bn-item" id="bn-input" onclick="switchView('input')">
+   <button class="bn-item" id="bn-input" onclick="switchView('input')">
     <span class="bn-icon">📝</span><span>Input Laporan</span>
+  </button>
+  <button class="bn-item" id="bn-catatan" onclick="switchView('catatan')">
+    <span class="bn-icon">🗓️</span><span>Catatan Harian</span>
   </button>
   <button class="bn-item" id="bn-profile" onclick="switchView('profile')">
     <span class="bn-icon">👤</span><span>Profil</span>
@@ -814,8 +817,9 @@ select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
         <div class="detail-toolbar">
           <h4 id="detail-count">0 pecahan</h4>
           <div class="detail-actions">
-            <button class="btn btn-secondary btn-sm" onclick="addDetailRow()">➕ Tambah</button>
+                        <button class="btn btn-secondary btn-sm" onclick="addDetailRow()">➕ Tambah</button>
             <button class="btn btn-secondary btn-sm" onclick="generateAllPecahan()">⚡ Semua Pecahan</button>
+            <button class="btn btn-secondary btn-sm" onclick="isiDariCatatanHarian_PDPasar()">📥 Isi dari Catatan Harian</button>
           </div>
         </div>
         <div id="detail-rows"></div>
@@ -1005,8 +1009,9 @@ select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
         <div class="detail-toolbar">
           <h4 id="retail-detail-count">0 pecahan</h4>
           <div class="detail-actions">
-            <button class="btn btn-secondary btn-sm" onclick="rAddRow()">➕ Tambah</button>
+                       <button class="btn btn-secondary btn-sm" onclick="rAddRow()">➕ Tambah</button>
             <button class="btn btn-secondary btn-sm" onclick="rGenerateAll()">⚡ Semua Pecahan</button>
+            <button class="btn btn-secondary btn-sm" onclick="isiDariCatatanHarian_Retail()">📥 Isi dari Catatan Harian</button>
           </div>
         </div>
         <div id="retail-detail-rows"></div>
@@ -1192,8 +1197,9 @@ select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
         <div class="detail-toolbar">
           <h4 id="bank-detail-count">0 pecahan</h4>
           <div class="detail-actions">
-            <button class="btn btn-secondary btn-sm" onclick="bAddRow()">➕ Tambah</button>
+                        <button class="btn btn-secondary btn-sm" onclick="bAddRow()">➕ Tambah</button>
             <button class="btn btn-secondary btn-sm" onclick="bGenerateAll()">⚡ Semua Pecahan</button>
+            <button class="btn btn-secondary btn-sm" onclick="isiDariCatatanHarian_Bank()">📥 Isi dari Catatan Harian</button>
           </div>
         </div>
         <div id="bank-detail-rows"></div>
@@ -1241,6 +1247,9 @@ select.field-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
 </div><!-- /view-input-bank -->
 
 
+
+<!-- CATATAN HARIAN VIEW -->
+<div id="view-catatan" class="dash-view" style="display:none"></div>
 
 <!-- PROFILE VIEW -->
 <div id="view-profile" class="dash-view" style="display:none"></div>
@@ -2291,26 +2300,24 @@ function applyLoggedInMitra(){
 let currentView='dashboard';
 function switchView(view){
   currentView=view;
-  // Sembunyikan semua view input (PD Pasar & Retail)
   ['view-input','view-input-retail','view-input-bank'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
-  ['dashboard','input','profile'].forEach(v=>{
+  ['dashboard','input','catatan','profile'].forEach(v=>{
     const bn=document.getElementById('bn-'+v);
     const el=v==='input'?null:document.getElementById('view-'+v);
     if(el)el.style.display=(v===view?'block':'none');
     if(bn)bn.classList.toggle('active',v===view);
   });
   if(view==='input'){
-    // Tampilkan view sesuai JenisMitra
     const inputId=getInputViewId();
     const el=document.getElementById(inputId);
     if(el)el.style.display='block';
     document.getElementById('bn-input').classList.add('active');
   }
   if(view==='dashboard'){
-    // Jika data sudah di-reset (submit baru), reload penuh
     if(!dashData.loaded)dashData={headers:[],details:[],loaded:false};
     renderDashboard();
   }
+  if(view==='catatan')renderCatatanHarian();
   if(view==='profile')renderProfile();
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -4613,6 +4620,286 @@ function showDuplicatePeriodeAlert(periode,onEditConfirm,editCount){
   document.getElementById('btn-dup-cancel').onclick=()=>wrap.remove();
   const editBtn=document.getElementById('btn-dup-edit');
   if(editBtn)editBtn.onclick=()=>{wrap.remove();onEditConfirm();};
+}
+
+// ============================================================
+// CATATAN HARIAN
+// ============================================================
+let dhEntries=[], dhLoaded=false;
+function dhJenis(){ return (currentUser?.JenisMitra||currentUser?.jenis||'').toLowerCase(); }
+function dhIsRetail(){ return dhJenis().includes('retail'); }
+function dhIsBank(){ return dhJenis().includes('perbankan')||dhJenis().includes('bank'); }
+
+async function dhLoadEntries(){
+  if(!currentUser)return;
+  const kode=currentUser.KodeMitra||currentUser.kode;
+  try{
+    const r=await fetch(`${SB_URL}/rest/v1/TRX_CatatanHarian?KodeMitra=eq.${enc(kode)}&order=TanggalCatat.desc,id.desc&limit=500`,{headers:sbHeaders()});
+    dhEntries=r.ok?await r.json():[];
+    dhLoaded=true;
+  }catch(e){console.error('dhLoadEntries error:',e);dhEntries=[];}
+}
+
+function dhPecahanOptsForJenis(){
+  if(dhIsBank())return bPecahanOpts();
+  return pecahanOpts();
+}
+
+function renderCatatanHarian(){
+  const el=document.getElementById('view-catatan');
+  if(!el)return;
+  el.innerHTML=`
+    <div class="dash-header">
+      <div class="dash-title">🗓️ Catatan Harian</div>
+      <div class="dash-sub">Catat transaksi setiap hari, otomatis terjumlah saat lapor mingguan</div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-head">
+        <div class="card-badge">Tambah Catatan</div>
+        <div class="card-title">Transaksi Hari Ini</div>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label class="field-label">Tanggal <span class="req">*</span></label>
+          <input type="date" id="dh-tanggal" class="field-input" value="${new Date().toISOString().split('T')[0]}" max="${new Date().toISOString().split('T')[0]}">
+        </div>
+        <div class="field">
+          <label class="field-label">Pecahan Uang <span class="req">*</span></label>
+          <select id="dh-pec" class="field-input" onchange="dhOnPecChange()">${dhPecahanOptsForJenis()}</select>
+        </div>
+        ${dhIsBank()?`
+        <div class="field-row col2">
+          <div class="field"><label class="field-label">Th. Emisi <span class="req">*</span></label><select id="dh-tahun" class="field-input">${bTahunEmisiOpts('')}</select></div>
+          <div class="field"><label class="field-label">Kondisi <span class="req">*</span></label><select id="dh-kat" class="field-input"><option value="">— Pilih —</option><option value="UTLE">UTLE</option><option value="ULE">ULE</option></select></div>
+        </div>
+        <div class="field-row col2">
+          <div class="field"><label class="field-label">Nominal Setoran (Rp)</label><input type="number" id="dh-set" class="field-input" placeholder="0" min="0" step="1000"></div>
+          <div class="field"><label class="field-label">Frekuensi Setoran</label><input type="number" id="dh-fset" class="field-input" placeholder="0" min="0" step="1"></div>
+        </div>
+        <div class="field-row col2">
+          <div class="field"><label class="field-label">Nominal Penarikan (Rp)</label><input type="number" id="dh-tar" class="field-input" placeholder="0" min="0" step="1000"></div>
+          <div class="field"><label class="field-label">Frekuensi Penarikan</label><input type="number" id="dh-ftar" class="field-input" placeholder="0" min="0" step="1"></div>
+        </div>`:''}
+        ${dhIsRetail()?`
+        <div class="field-row col2">
+          <div class="field"><label class="field-label">Nominal Penukaran (Rp) <span class="req">*</span></label><input type="number" id="dh-nom" class="field-input" placeholder="0" min="0" step="1000"></div>
+          <div class="field"><label class="field-label">Frekuensi</label><input type="number" id="dh-frq" class="field-input" placeholder="0" min="0" step="1"></div>
+        </div>
+        <div class="field"><label class="field-label">Permintaan Tidak Terlayani</label><input type="number" id="dh-ptt" class="field-input" placeholder="0" min="0" step="1"></div>`:''}
+        ${!dhIsRetail()&&!dhIsBank()?`
+        <div class="field-row col2">
+          <div class="field"><label class="field-label">Estimasi Nominal (Rp) <span class="req">*</span></label><input type="number" id="dh-nom" class="field-input" placeholder="0" min="0" step="1"></div>
+          <div class="field"><label class="field-label">Kategori Kelusuhan</label><select id="dh-kat" class="field-input">${kategoriOpts()}</select></div>
+        </div>`:''}
+        <div class="field">
+          <label class="field-label">Keterangan</label>
+          <input type="text" id="dh-ket" class="field-input" placeholder="Keterangan tambahan...">
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center" id="btn-dh-save" onclick="dhSaveEntry()">💾 Simpan Catatan</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title" style="font-size:14px">📋 Riwayat Catatan</div></div>
+      <div class="card-body" id="dh-riwayat">Memuat...</div>
+    </div>`;
+  dhLoadEntries().then(dhRenderRiwayat);
+}
+
+function dhOnPecChange(){
+  if(!dhIsBank())return;
+  const sel=document.getElementById('dh-pec');
+  const kode=sel.value.split('|')[0]||'';
+  const tahunEl=document.getElementById('dh-tahun');
+  if(tahunEl)tahunEl.innerHTML=kode?bTahunEmisiOpts(kode):'<option value="">— Pilih Pecahan dulu —</option>';
+}
+
+function dhRenderRiwayat(){
+  const el=document.getElementById('dh-riwayat');
+  if(!el)return;
+  if(!dhEntries.length){el.innerHTML=`<div class="empty-dash"><div class="ed-icon">📭</div><p>Belum ada catatan harian</p></div>`;return;}
+  const byDate={};
+  dhEntries.forEach(e=>{if(!byDate[e.TanggalCatat])byDate[e.TanggalCatat]=[];byDate[e.TanggalCatat].push(e);});
+  const dates=Object.keys(byDate).sort((a,b)=>b.localeCompare(a));
+  el.innerHTML=dates.map(d=>{
+    const items=byDate[d];
+    const dObj=new Date(d+'T00:00:00');
+    return `<div style="margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:6px">📆 ${formatTgl(dObj)}</div>
+      ${items.map(it=>dhRenderEntryRow(it)).join('')}
+    </div>`;
+  }).join('');
+}
+
+function dhRenderEntryRow(it){
+  let valText='';
+  if(dhIsBank()) valText=`Setor ${fmtRp(it.NominalSetoran||0)} · Tarik ${fmtRp(it.NominalPenarikan||0)}${it.Kategori?' · '+it.Kategori:''}`;
+  else if(dhIsRetail()) valText=`${fmtRp(it.NominalPenukaran||0)}${it.FrekuensiPenukaran?' · '+it.FrekuensiPenukaran+'x':''}`;
+  else valText=`${fmtRp(it.EstimasiNominal||0)}${it.Kategori?' · '+it.Kategori:''}`;
+  return `<div class="detail-row" style="padding:10px 12px;margin-bottom:6px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-weight:700;font-size:12px">${it.PecahanUang||'—'}</div>
+        <div style="font-size:11px;color:var(--gray-500)">${valText}</div>
+        ${it.Keterangan?`<div style="font-size:10px;color:var(--gray-400);margin-top:2px">${it.Keterangan}</div>`:''}
+      </div>
+      <button class="btn btn-danger-light btn-sm btn-icon" onclick="dhDeleteEntry(${it.id})">✕</button>
+    </div>
+  </div>`;
+}
+
+async function dhSaveEntry(){
+  const btn=document.getElementById('btn-dh-save');
+  const tgl=document.getElementById('dh-tanggal')?.value;
+  const pecVal=document.getElementById('dh-pec')?.value;
+  if(!tgl){toast('⚠️ Tanggal wajib diisi','t-warn');return;}
+  if(!pecVal){toast('⚠️ Pilih pecahan uang dulu','t-warn');return;}
+  const pp=pecVal.split('|');
+  const m=currentUser;
+  const payload={
+    KodeMitra:m.KodeMitra||m.kode,NamaMitra:m.NamaMitra||m.nama,JenisMitra:m.JenisMitra||m.jenis||'',Wilayah:m.Wilayah||m.wilayah||'',
+    TanggalCatat:tgl,PecahanUang:pp[1]||'',KodePecahan:pp[0]||'',KelompokPecahan:pp[2]||'',
+    Keterangan:document.getElementById('dh-ket')?.value||''
+  };
+  if(dhIsBank()){
+    const tahunVal=document.getElementById('dh-tahun')?.value||'';
+    const set=parseFloat(document.getElementById('dh-set')?.value)||0;
+    const tar=parseFloat(document.getElementById('dh-tar')?.value)||0;
+    if(!tahunVal){toast('⚠️ Pilih Tahun Emisi dulu','t-warn');return;}
+    if(!set&&!tar){toast('⚠️ Isi minimal nominal setoran atau penarikan','t-warn');return;}
+    payload.TahunEmisi=tahunVal.split('|')[0]||'';payload.StatusEmisi=tahunVal.split('|')[1]||'';
+    payload.Kategori=document.getElementById('dh-kat')?.value||'';
+    payload.NominalSetoran=set;payload.FrekuensiSetoran=parseInt(document.getElementById('dh-fset')?.value)||0;
+    payload.NominalPenarikan=tar;payload.FrekuensiPenarikan=parseInt(document.getElementById('dh-ftar')?.value)||0;
+  } else if(dhIsRetail()){
+    const nom=parseFloat(document.getElementById('dh-nom')?.value)||0;
+    if(!nom){toast('⚠️ Nominal penukaran wajib diisi','t-warn');return;}
+    payload.NominalPenukaran=nom;
+    payload.FrekuensiPenukaran=parseInt(document.getElementById('dh-frq')?.value)||0;
+    payload.PermintaanTidakTerlayani=parseInt(document.getElementById('dh-ptt')?.value)||0;
+  } else {
+    const nom=parseFloat(document.getElementById('dh-nom')?.value)||0;
+    if(!nom){toast('⚠️ Estimasi nominal wajib diisi','t-warn');return;}
+    payload.EstimasiNominal=nom;
+    const katEl=document.getElementById('dh-kat');
+    payload.Kategori=katEl&&katEl.value?katEl.value.split('|')[0]:'';
+  }
+  btn.disabled=true;btn.innerHTML='<div class="spin"></div> Menyimpan...';
+  try{
+    await sbInsert('TRX_CatatanHarian',payload);
+    toast('✅ Catatan tersimpan','t-success',2500);
+    ['dh-nom','dh-frq','dh-ptt','dh-set','dh-fset','dh-tar','dh-ftar','dh-ket'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+    await dhLoadEntries();dhRenderRiwayat();
+  }catch(e){toast(`❌ Gagal: ${e.message}`,'t-error',6000);}
+  btn.disabled=false;btn.innerHTML='💾 Simpan Catatan';
+}
+
+async function dhDeleteEntry(id){
+  if(!confirm('Hapus catatan ini?'))return;
+  try{
+    const res=await fetch(`${SB_URL}/rest/v1/TRX_CatatanHarian?id=eq.${id}`,{method:'DELETE',headers:sbHeaders()});
+    if(!res.ok)throw new Error('Gagal hapus');
+    dhEntries=dhEntries.filter(e=>e.id!==id);dhRenderRiwayat();
+    toast('🗑️ Catatan dihapus','',2000);
+  }catch(e){toast(`❌ Gagal hapus: ${e.message}`,'t-error',4000);}
+}
+
+// ============================================================
+// AGGREGASI CATATAN HARIAN → FORM MINGGUAN
+// ============================================================
+async function aggregateCatatanHarian(tahun,bulan,minggu){
+  const m=currentUser;
+  const kode=m.KodeMitra||m.kode;
+  const {tAwal,tAkhir}=getPeriodeDates(parseInt(tahun),bulan,minggu);
+  const dAwal=tAwal.toISOString().split('T')[0];
+  const dAkhir=tAkhir.toISOString().split('T')[0];
+  try{
+    const r=await fetch(`${SB_URL}/rest/v1/TRX_CatatanHarian?KodeMitra=eq.${enc(kode)}&TanggalCatat=gte.${dAwal}&TanggalCatat=lte.${dAkhir}&select=*`,{headers:sbHeaders()});
+    const rows=r.ok?await r.json():[];
+    if(!rows.length)return[];
+    const groupKey=e=>dhIsBank()?`${e.KodePecahan}__${e.Kategori||''}__${e.TahunEmisi||''}`:`${e.KodePecahan}`;
+    const map={};
+    rows.forEach(e=>{
+      const k=groupKey(e);
+      if(!map[k])map[k]={...e,EstimasiNominal:0,NominalPenukaran:0,FrekuensiPenukaran:0,PermintaanTidakTerlayani:0,NominalSetoran:0,FrekuensiSetoran:0,NominalPenarikan:0,FrekuensiPenarikan:0};
+      map[k].EstimasiNominal+=(parseFloat(e.EstimasiNominal)||0);
+      map[k].NominalPenukaran+=(parseFloat(e.NominalPenukaran)||0);
+      map[k].FrekuensiPenukaran+=(parseInt(e.FrekuensiPenukaran)||0);
+      map[k].PermintaanTidakTerlayani+=(parseInt(e.PermintaanTidakTerlayani)||0);
+      map[k].NominalSetoran+=(parseFloat(e.NominalSetoran)||0);
+      map[k].FrekuensiSetoran+=(parseInt(e.FrekuensiSetoran)||0);
+      map[k].NominalPenarikan+=(parseFloat(e.NominalPenarikan)||0);
+      map[k].FrekuensiPenarikan+=(parseInt(e.FrekuensiPenarikan)||0);
+    });
+    return Object.values(map);
+  }catch(e){console.error('aggregateCatatanHarian error:',e);toast('❌ Gagal mengambil catatan harian','t-error',4000);return[];}
+}
+
+async function isiDariCatatanHarian_PDPasar(){
+  const tahun=v('h-tahun'),bulan=v('h-bulan'),minggu=v('h-minggu');
+  toastLoad('📥 Mengambil catatan harian...');
+  const agg=await aggregateCatatanHarian(tahun,bulan,minggu);
+  rmToastLoad();
+  if(!agg.length){toast('ℹ️ Tidak ada catatan harian pada periode ini','t-warn',3500);return;}
+  document.getElementById('detail-rows').innerHTML='';
+  document.getElementById('detail-empty').style.display='none';
+  rowIdx=0;
+  agg.forEach(a=>{
+    addDetailRow(`${a.KodePecahan}|${a.PecahanUang}|${a.KelompokPecahan}`);
+    const rows=document.querySelectorAll('#detail-rows .detail-row');
+    const rid=rows[rows.length-1].id;
+    document.getElementById(`nom-${rid}`).value=a.EstimasiNominal;
+    if(a.Kategori){
+      const katSel=document.getElementById(`kat-${rid}`);
+      if(katSel)[...katSel.options].forEach(o=>{if(o.value.split('|')[4]===a.Kategori)katSel.value=o.value;});
+    }
+    validateNom(rid);
+  });
+  toast(`✅ ${agg.length} pecahan terisi dari catatan harian — silakan cek & koreksi bila perlu`,'t-success',5000);
+}
+
+async function isiDariCatatanHarian_Retail(){
+  const tahun=rv('rh-tahun'),bulan=rv('rh-bulan'),minggu=rv('rh-minggu');
+  toastLoad('📥 Mengambil catatan harian...');
+  const agg=await aggregateCatatanHarian(tahun,bulan,minggu);
+  rmToastLoad();
+  if(!agg.length){toast('ℹ️ Tidak ada catatan harian pada periode ini','t-warn',3500);return;}
+  document.getElementById('retail-detail-rows').innerHTML='';
+  document.getElementById('retail-detail-empty').style.display='none';
+  rRowIdx=0;
+  agg.forEach(a=>{
+    rAddRow(`${a.KodePecahan}|${a.PecahanUang}|${a.KelompokPecahan}`);
+    const rows=document.querySelectorAll('#retail-detail-rows .retail-row');
+    const rid=rows[rows.length-1].id;
+    document.getElementById(`rnom-${rid}`).value=a.NominalPenukaran;
+    document.getElementById(`rfrq-${rid}`).value=a.FrekuensiPenukaran;
+    document.getElementById(`rptt-${rid}`).value=a.PermintaanTidakTerlayani;
+  });
+  toast(`✅ ${agg.length} pecahan terisi dari catatan harian — silakan cek & koreksi bila perlu`,'t-success',5000);
+}
+
+async function isiDariCatatanHarian_Bank(){
+  const tahun=bv('bh-tahun'),bulan=bv('bh-bulan'),minggu=bv('bh-minggu');
+  toastLoad('📥 Mengambil catatan harian...');
+  const agg=await aggregateCatatanHarian(tahun,bulan,minggu);
+  rmToastLoad();
+  if(!agg.length){toast('ℹ️ Tidak ada catatan harian pada periode ini','t-warn',3500);return;}
+  document.getElementById('bank-detail-rows').innerHTML='';
+  document.getElementById('bank-detail-empty').style.display='none';
+  bRowIdx=0;
+  agg.forEach(a=>{
+    bAddRow(`${a.KodePecahan}|${a.PecahanUang}|${a.KelompokPecahan}`);
+    const rows=document.querySelectorAll('#bank-detail-rows .bank-row');
+    const rid=rows[rows.length-1].id;
+    const tahunSel=document.getElementById(`btahun-${rid}`);
+    if(tahunSel&&a.TahunEmisi)[...tahunSel.options].forEach(o=>{if(o.value.split('|')[0]===a.TahunEmisi)tahunSel.value=o.value;});
+    const katSel=document.getElementById(`bkat-${rid}`);
+    if(katSel&&a.Kategori)katSel.value=a.Kategori;
+    document.getElementById(`bset-${rid}`).value=a.NominalSetoran;
+    document.getElementById(`bfset-${rid}`).value=a.FrekuensiSetoran;
+    document.getElementById(`btar-${rid}`).value=a.NominalPenarikan;
+    document.getElementById(`bftar-${rid}`).value=a.FrekuensiPenarikan;
+  });
+  toast(`✅ ${agg.length} pecahan terisi dari catatan harian — silakan cek & koreksi bila perlu`,'t-success',5000);
 }
 
 // ============================================================
