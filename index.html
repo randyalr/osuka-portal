@@ -2057,13 +2057,11 @@ async function doLogin(){
   if(!ok)return;
   const btn=document.getElementById('btn-login');btn.disabled=true;btn.innerHTML='<div class="spin"></div> Memeriksa...';
   try{
-    const hashedPass=await hashPassword(pass);
-    // [PENYESUAIAN ADMIN 1] Cek akun internal (SYS_User) dulu; fallback ke MD_Mitra
-    // hanya jika email memang tidak terdaftar sebagai staf internal.
-    let res=await loginInternal(email,hashedPass);
-    if(!res.ok&&res.code==='NOTFOUND'){
-      res=await loginMitra(email,hashedPass);
-    }
+        const hashedPass=await hashPassword(pass);
+    // Login internal (SYS_User) sudah tidak dipakai di portal ini sejak tabel SYS_User
+    // dihapus — akun staf internal kini dikelola lewat Motor PUR Apps (Power Apps + SSO
+    // Azure AD), terpisah dari portal mitra ini.
+    let res=await loginMitra(email,hashedPass);
     if(!res.ok){
       if(res.code==='NOTFOUND')errEl.innerHTML='Email belum terdaftar. <a onclick="toAuthScreen(\'signup\')" style="color:var(--primary);font-weight:700;cursor:pointer">Daftar dulu</a>';
       else if(res.code==='BADPASS')errEl.textContent='Password salah';
