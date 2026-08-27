@@ -2183,8 +2183,14 @@ async function doResetPassword(){
     const rows=r.ok?await r.json():[];
     if(!rows.length){errEl.textContent='Link reset tidak valid atau sudah digunakan';btn.disabled=false;btn.innerHTML='Simpan Password Baru →';return;}
     if(new Date(rows[0].ResetExpiry)<new Date()){errEl.textContent='Link reset sudah kedaluwarsa (1 jam). Minta link baru.';btn.disabled=false;btn.innerHTML='Simpan Password Baru →';return;}
-    const hashedNewPass=await hashPassword(pass);
-    await fetch(`${SB_URL}/rest/v1/MD_Mitra?Email=eq.${enc(email)}`,{method:'PATCH',headers:sbHeaders(),body:JSON.stringify({Password:hashedNewPass,ResetToken:null,ResetExpiry:null})});
+        const hashedNewPass=await hashPassword(pass);
+    const patchRes=await fetch(`${SB_URL}/rest/v1/MD_Mitra?Email=eq.${enc(email)}`,{method:'PATCH',headers:sbHeaders(),body:JSON.stringify({Password:hashedNewPass,ResetToken:null,ResetExpiry:null})});
+    const patchRows=patchRes.ok?await patchRes.json():[];
+    if(!patchRes.ok||!Array.isArray(patchRows)||!patchRows.length){
+      errEl.textContent='Gagal menyimpan password baru. Coba lagi atau hubungi admin.';
+      btn.disabled=false;btn.innerHTML='Simpan Password Baru →';
+      return;
+    }
     window._resetToken=null;window._resetEmail=null;
     history.replaceState({},'',location.pathname);
     toast('✅ Password berhasil diubah. Silakan login.','t-success',4000);
