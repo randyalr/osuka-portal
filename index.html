@@ -1769,7 +1769,7 @@ function updateDetailCount(){
 // SUMMARY
 // ============================================================
 function genTitle(){
-  const m=selectedMitra.nama.toUpperCase().replace(/\s+/g,'').substring(0,14);
+  const m=selectedMitra.nama.toUpperCase().replace(/[^A-Z0-9]+/g,'').substring(0,14);
   return `${m}-${v('h-tahun')}-${v('h-bulan').toUpperCase()}-${v('h-minggu')}`;
 }
 function v(id){return document.getElementById(id)?.value||'';}
@@ -3411,7 +3411,7 @@ function rUpdateCount(){
 // ── Summary Retail ────────────────────────────────────────────
 function rGenTitle(){
   const m=currentUser;
-  const nama=(m.NamaMitra||m.nama||'').toUpperCase().replace(/\s+/g,'').substring(0,14);
+  const nama=(m.NamaMitra||m.nama||'').toUpperCase().replace(/[^A-Z0-9]+/g,'').substring(0,14);
   const tahun=document.getElementById('rh-tahun')?.value||'2026';
   const bulan=(document.getElementById('rh-bulan')?.value||'JUNI').toUpperCase();
   const minggu=document.getElementById('rh-minggu')?.value||'M1';
@@ -3977,7 +3977,7 @@ function bUpdateCount(){
 // ── Summary Bank ──────────────────────────────────────────────
 function bGenTitle(){
   const m=currentUser;
-  const nama=(m.NamaMitra||m.nama||'').toUpperCase().replace(/\s+/g,'').substring(0,14);
+  const nama=(m.NamaMitra||m.nama||'').toUpperCase().replace(/[^A-Z0-9]+/g,'').substring(0,14);
   const tahun=document.getElementById('bh-tahun')?.value||'2026';
   const bulan=(document.getElementById('bh-bulan')?.value||'JUNI').toUpperCase();
   const minggu=document.getElementById('bh-minggu')?.value||'M1';
