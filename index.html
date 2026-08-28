@@ -2842,7 +2842,7 @@ function renderTableHTML(headers){
         <td><div style="font-weight:700;font-size:12px">${h.Bulan||''} ${h.Tahun||''}</div><div style="font-size:10px;color:var(--gray-400)">${h.Minggu||''}</div></td>
         <td style="font-size:11px;color:var(--gray-500)">${tgl}</td>
         <td style="font-weight:700;color:var(--success);font-size:12px">${fmtRp(est)}</td>
-        <td>${statusBadge(h.StatusVerifikasi)}</td>
+                <td>${statusBadge(h.StatusVerifikasi)}${parseStatus(h.StatusVerifikasi)==='Rejected'?'<div style="font-size:9px;color:var(--danger);margin-top:2px">⚠ Perlu revisi</div>':''}</td>
         <td><button class="btn btn-secondary btn-sm" onclick="openDetail('${h.Title}')">Detail</button></td>
       </tr>`;
     }).join('')}</tbody>
@@ -2867,7 +2867,12 @@ async function openDetail(title){
         <div class="detail-kv"><div class="dk-label">Mitra</div><div class="dk-val">${h.Mitra||'—'}</div></div>
         <div class="detail-kv"><div class="dk-label">Wilayah</div><div class="dk-val">${h.Wilayah||'—'}</div></div>
         <div class="detail-kv"><div class="dk-label">Periode</div><div class="dk-val">${h.Bulan||''} ${h.Tahun||''} · ${h.Minggu||''}</div></div>
-        <div class="detail-kv"><div class="dk-label">Status</div><div class="dk-val">${statusBadge(parseStatus(h.StatusVerifikasi))}</div></div>
+                <div class="detail-kv"><div class="dk-label">Status</div><div class="dk-val">${statusBadge(parseStatus(h.StatusVerifikasi))}</div></div>
+        ${parseStatus(h.StatusVerifikasi)==='Rejected'&&h.AlasanRejected?`
+        <div class="detail-kv full" style="background:#fef2f2;border:1px solid #fecaca">
+          <div class="dk-label" style="color:var(--danger)">Alasan Penolakan</div>
+          <div class="dk-val" style="font-weight:400;color:#991b1b">${h.AlasanRejected}</div>
+        </div>`:''}
         <div class="detail-kv"><div class="dk-label">PIC Pelapor</div><div class="dk-val">${h.PICPelapor||'—'}</div></div>
         <div class="detail-kv"><div class="dk-label">Tanggal Submit</div><div class="dk-val">${h.TanggalSubmit?new Date(h.TanggalSubmit).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}):'—'}</div></div>
         <div class="detail-kv full"><div class="dk-label">Ringkasan Kondisi</div><div class="dk-val" style="font-weight:400;line-height:1.6">${h.RingkasanKondisi||'—'}</div></div>
@@ -3105,7 +3110,7 @@ async function checkStatusChanges(){
     if(jenis2.includes('retail'))notifTbl='TRX_PenukaranRetail_Header';
     else if(jenis2.includes('perbankan')||jenis2.includes('bank'))notifTbl='TRX_MonitoringUL_Header';
     const tahunField=notifTbl==='TRX_MonitoringUL_Header'?'TahunLapor':'Tahun';
-    const r=await fetch(`${SB_URL}/rest/v1/${notifTbl}?KodeMitra=eq.${enc(kode)}&select=Title,StatusVerifikasi,Bulan,${tahunField},Minggu`,{headers:sbHeaders()});
+       const r=await fetch(`${SB_URL}/rest/v1/${notifTbl}?KodeMitra=eq.${enc(kode)}&select=Title,StatusVerifikasi,Bulan,${tahunField},Minggu,AlasanRejected`,{headers:sbHeaders()});
     if(!r.ok)return;
     const headers=await r.json();
     const newStatus={};
@@ -3119,8 +3124,9 @@ async function checkStatusChanges(){
         const periode=`${h.Bulan||''} ${h[tahunField]||''} ${h.Minggu||''}`.trim();
         if(curStatus==='Verified'){
           addNotif(`Laporan <b>${periode}</b> telah diverifikasi oleh Tim BI ✅`,'success',h.Title);
-        } else if(curStatus==='Rejected'){
-          addNotif(`Laporan <b>${periode}</b> ditolak oleh Tim BI ❌, harap revisi dan kirim ulang`,'error',h.Title);
+                } else if(curStatus==='Rejected'){
+          const alasanTxt=h.AlasanRejected?` — Alasan: ${h.AlasanRejected}`:'';
+          addNotif(`Laporan <b>${periode}</b> ditolak oleh Tim BI ❌, harap revisi dan kirim ulang${alasanTxt}`,'error',h.Title);
         } else {
           addNotif(`Status laporan <b>${periode}</b> berubah menjadi ${curStatus}`,'info',h.Title);
         }
